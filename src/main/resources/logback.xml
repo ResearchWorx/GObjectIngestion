@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <Pattern>
+        %d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %logger{36} - %msg%n
+      </Pattern>
+    </layout>
+  </appender>
+
+  <appender name="FOLDERPROCESSOR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/FolderProcessor.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/FolderProcessor/%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="OBJECTSTORAGE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/ObjectStorage.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/ObjectStorage/%d{yyyy-MM-dd}.log.zg</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="PLUGINCORE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/PluginCore.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/PluginCore/%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="SHARED" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/Shared.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/Shared/%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.InPathPreProcessor" level="info" additivity="false">
+    <appender-ref ref="FOLDERPROCESSOR" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.InPathProcessor" level="info" additivity="false">
+    <appender-ref ref="FOLDERPROCESSOR" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.OutPathPreProcessor" level="info" additivity="false">
+    <appender-ref ref="FOLDERPROCESSOR" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.WatchDirectory" level="info" additivity="false">
+    <appender-ref ref="FOLDERPROCESSOR" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+
+  <logger name="com.researchworx.genomics.gobjectingestion.objectstorage.MD5Tools" level="info" additivity="false">
+    <appender-ref ref="OBJECTSTORAGE" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.objectstorage.ObjectEngine" level="info" additivity="false">
+    <appender-ref ref="OBJECTSTORAGE" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+
+  <logger name="com.researchworx.genomics.gobjectingestion.plugincore.Config" level="info" additivity="false">
+    <appender-ref ref="PLUGINCORE" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine" level="info" additivity="false">
+    <appender-ref ref="PLUGINCORE" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+
+  <logger name="com.researchworx.genomics.gobjectingestion.shared.MsgEvent" level="info" additivity="false">
+    <appender-ref ref="SHARED" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.shared.MsgEventParamsAdapter" level="info" additivity="false">
+    <appender-ref ref="SHARED" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.shared.MsgEventType" level="info" additivity="false">
+    <appender-ref ref="SHARED" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.shared.MsgEventTypesAdapter" level="info" additivity="false">
+    <appender-ref ref="SHARED" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+
+  <root level="error">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</configuration>

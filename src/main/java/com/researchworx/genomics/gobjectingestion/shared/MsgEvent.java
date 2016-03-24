@@ -64,7 +64,7 @@ public class MsgEvent {
 		setParam("dst_plugin",getParam(src_plugin));
 	}*/
 
-    /*public void setReturn2() {
+    public void setReturn2() {
         String src_region = null;
         String src_agent;
         String src_plugin = null;
@@ -114,9 +114,9 @@ public class MsgEvent {
             params.remove("dst_agent");
             params.remove("dst_plugin");
         }
-    }*/
+    }
 
-    /*public void setReturn() {
+    public void setReturn() {
         String src_region = getParam("src_region");
         String src_agent = getParam("src_agent");
         String src_plugin = null;
@@ -148,7 +148,7 @@ public class MsgEvent {
             params.remove("dst_plugin");
             setMsgPlugin(null);
         }
-    }*/
+    }
 
     public String getMsgBody() {
         return params.get("msg");

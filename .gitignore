@@ -9,3 +9,4 @@ target/
 hs_err_pid*
 
 *.conf
+*.ini
