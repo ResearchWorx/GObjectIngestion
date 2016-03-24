@@ -119,7 +119,7 @@ public class InPathProcessor implements Runnable {
                         bw.write(line + "\n");
                     }
                 } /*finally {
-					bw.close();
+                    bw.close();
 				}*/
                 String status = transferStatus(dir, "transfer_complete_status");
                 if (status.equals("yes")) {

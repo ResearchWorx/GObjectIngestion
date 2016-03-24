@@ -83,7 +83,7 @@ public class ObjectEngine {
             // You can poll your transfer's status to check its progress
             while (!myUpload.isDone()) {
                 /*
-				   System.out.println("Transfer: " + myUpload.getDescription());
+                   System.out.println("Transfer: " + myUpload.getDescription());
 				   System.out.println("  - State: " + myUpload.getState());
 				   System.out.println("  - Progress: "
 								   + myUpload.getProgress().getBytesTransferred());
@@ -243,7 +243,7 @@ public class ObjectEngine {
                     String bucket_key = s3Dir + listOfFiles[i].getName();
                     String md5hash = null;
                     if (mdhp.containsKey(bucket_key)) {
-                        String checkhash = mdhp.get(bucket_key).toString();
+                        String checkhash = mdhp.get(bucket_key);
                         if (checkhash.contains("-")) {
                             //large file or part of multipart, use multipart checksum
                             md5hash = md5t.getMultiCheckSum(listOfFiles[i].getAbsolutePath());
@@ -293,7 +293,7 @@ public class ObjectEngine {
     public Map<String, String> listBucketContents(String bucket) {
         Map<String, String> fileMap = null;
         try {
-            fileMap = new HashMap<String, String>();
+            fileMap = new HashMap<>();
             ObjectListing objects = conn.listObjects(bucket);
             do {
                 for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {

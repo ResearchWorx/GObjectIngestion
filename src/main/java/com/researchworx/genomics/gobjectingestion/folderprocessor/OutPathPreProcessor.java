@@ -76,7 +76,7 @@ public class OutPathPreProcessor implements Runnable {
             System.out.println("MOVE DIRECTORY ! " + remoteDir);
             oe.downloadDirectory(bucket_name, remoteDir, incoming_directory);
 
-            List<String> filterList = new ArrayList<String>();
+            List<String> filterList = new ArrayList<>();
             filterList.add(transfer_status_file);
             String inDir = incoming_directory;
             if (!inDir.endsWith("/")) {
@@ -105,7 +105,7 @@ public class OutPathPreProcessor implements Runnable {
 
         ObjectEngine oe = new ObjectEngine("pathstage2");
         String status = transferStatus(dir, "transfer_complete_status");
-        List<String> filterList = new ArrayList<String>();
+        List<String> filterList = new ArrayList<>();
         filterList.add(transfer_status_file);
 
         if (status.equals("no")) {
@@ -165,7 +165,7 @@ public class OutPathPreProcessor implements Runnable {
                         bw.write(line + "\n");
                     }
                 }/* finally {
-					bw.close();
+                    bw.close();
 				}*/
                 String status = transferStatus(dir, "transfer_complete_status");
                 if (status.equals("yes")) {
