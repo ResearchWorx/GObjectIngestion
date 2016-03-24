@@ -14,21 +14,19 @@ import com.google.common.io.BaseEncoding;
 
 import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
 
-public class MD5Tools {
+class MD5Tools {
+	private String group;
 
-	String group;
-	public MD5Tools(String group)
-	{
+	MD5Tools(String group) {
 		this.group = group;
 	}
-	public String getMultiCheckSum(String fileName) throws IOException
-	{
+
+	String getMultiCheckSum(String fileName) throws IOException {
 		String mpHash = null;
 		FileInputStream fis = null;
 		
-		try
-		{
-			List<String> hashList = new ArrayList<String>();
+		try {
+			List<String> hashList = new ArrayList<>();
 		
 			MessageDigest md = MessageDigest.getInstance("MD5");
 		
@@ -45,44 +43,35 @@ public class MD5Tools {
 			//for(int i = 0; i < inputFile.length(); i = i + size)
 			boolean isReading = true;
 			int bytesRead = 0;
-			while(isReading)
-			{
+			while(isReading) {
 				byte[] bs = null;
             
 				long remaining = inputFile.length() - bytesRead;
 				//System.out.println("remaingin: " + remaining);
-				if(remaining > partSize)
-				{
+				if(remaining > partSize) {
 					bs = new byte[partSize];
 					bytesRead = bytesRead + fis.read(bs, 0, partSize);
-				}
-				else
-				{
+				} else {
 					bs = new byte[(int) remaining];
 					bytesRead = bytesRead + fis.read(bs, 0, (int) remaining);
 				}
 				byte[] hash = md.digest(bs);
 				//System.out.println(getMD5(hash));
 				hashList.add(getMD5(hash));
-				if(bytesRead == inputFile.length())
-				{
+				if(bytesRead == inputFile.length()) {
 					isReading = false;
 				}
 			}
-        mpHash = calculateChecksumForMultipartUpload(hashList);
+        	mpHash = calculateChecksumForMultipartUpload(hashList);
 		}
-		catch(Exception ex)
-		{
+		catch(Exception ex) {
 			System.out.println("MD5Tools : getMultiPartHash Error " + ex.toString());
-		}
-		finally
-		{
+		} finally {
 			fis.close();
-			
 		}
 		return mpHash;
-		
 	}
+
 	private static String calculateChecksumForMultipartUpload(List<String> md5s) {      
 	    StringBuilder stringBuilder = new StringBuilder();
 	    for (String md5:md5s) {
@@ -98,52 +87,44 @@ public class MD5Tools {
 	    return digest + "-" + md5s.size();
 	}
 	
-	private static String getMD52(byte[] hash)
-	{
+	private static String getMD52(byte[] hash) {
 		Hasher hasher = Hashing.md5().newHasher();
 	    hasher.putBytes(hash);
-	    String digest = hasher.hash().toString();
-	    return digest;
+	    return hasher.hash().toString();
 	}
-	private static String getMD5(byte[] hash)
-	{
-		StringBuffer hexString = new StringBuffer();
-		
-		for (int i = 0; i < hash.length; i++) {
-            if ((0xff & hash[i]) < 0x10) {
-                hexString.append("0"
-                        + Integer.toHexString((0xFF & hash[i])));
+
+	private static String getMD5(byte[] hash) {
+		StringBuilder hexString = new StringBuilder();
+		for (byte hashByte : hash) {
+		//for (int i = 0; i < hash.length; i++) {
+            if ((0xff & /*hash[i]*/ hashByte) < 0x10) {
+                hexString.append("0");
+                hexString.append(Integer.toHexString(0xFF & /*hash[i]*/ hashByte));
             } else {
-                hexString.append(Integer.toHexString(0xFF & hash[i]));
+                hexString.append(Integer.toHexString(0xFF & /*hash[i]*/ hashByte));
             }
         }
 		return hexString.toString();
 	}
 	
-	public String getCheckSum(String path) throws IOException
-	{
+	String getCheckSum(String path) throws IOException {
 		String hash = null;
-		FileInputStream fis = null;
-		try
-		{
-			fis = new FileInputStream(new File(path));
+		//FileInputStream fis = null;
+		try (FileInputStream fis = new FileInputStream(new File(path))) {
+			//fis = new FileInputStream(new File(path));
 			hash = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
-		}
-		catch(Exception ex)
-		{
+		} catch(Exception ex) {
 			System.out.println("MD5Tools : getCheckSum Error : " + ex.toString());
-		}
-		finally
-		{
+		}/* finally {
 			fis.close();
-		}
+		}*/
 		return hash;
 		
 	}
+
 	public String getCheckSum2(String path){
         String checksum = null;
-        try 
-        {
+        try {
             FileInputStream fis = new FileInputStream(path);
             MessageDigest md = MessageDigest.getInstance("MD5");
           
@@ -156,9 +137,7 @@ public class MD5Tools {
             byte[] hash = md.digest();
             checksum = new BigInteger(1, hash).toString(16); //don't use this, truncates leading zero
             fis.close();
-        } 
-        catch (Exception ex) 
-        {
+        } catch (Exception ex) {
             System.out.println("ObjectEngine : checkSum");
         } 
        return checksum;

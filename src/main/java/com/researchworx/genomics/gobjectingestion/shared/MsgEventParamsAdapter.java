@@ -8,14 +8,14 @@ class MsgEventParamsAdapter extends XmlAdapter<MsgEventParamsAdapter.AdaptedMap,
         List<Entry> entry = new ArrayList<>();
     }
      
-    static class Entry {
+    private static class Entry {
         String key;
         String value;
     }
  
     @Override
     public Map<String, String> unmarshal(AdaptedMap adaptedMap) throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         for(Entry entry : adaptedMap.entry) {
             map.put(entry.key, entry.value);
         }

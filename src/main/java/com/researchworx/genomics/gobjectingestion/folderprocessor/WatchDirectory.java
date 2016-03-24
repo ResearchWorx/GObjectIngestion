@@ -50,8 +50,9 @@ public class WatchDirectory {
     private final Map<WatchKey,Path> keys;
     private final boolean recursive;
     private boolean trace = false;
+
     @SuppressWarnings("unchecked")
-    static <T> WatchEvent<T> cast(WatchEvent<?> event) {
+    private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
         return (WatchEvent<T>)event;
     }
 
@@ -222,20 +223,13 @@ public class WatchDirectory {
 
         if (list == null) return;
 
-        for ( File f : list ) 
-        {
-            
+        for ( File f : list ) {
         	if ( f.isDirectory() ) {
                 walkPath( f.getAbsolutePath() );
-            }
-            else {
+            } else {
                 Path dir = Paths.get(f.getAbsolutePath());
             	PluginEngine.pathQueue.offer(dir);
             }
-            
-        	
         }
     }
-    
-    
 }
