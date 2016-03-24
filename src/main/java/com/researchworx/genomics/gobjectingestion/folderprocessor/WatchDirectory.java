@@ -32,8 +32,10 @@ package com.researchworx.genomics.gobjectingestion.folderprocessor;
  */
 
 import java.nio.file.*;
+
 import static java.nio.file.StandardWatchEventKinds.*;
 import static java.nio.file.LinkOption.*;
+
 import java.nio.file.attribute.*;
 import java.io.*;
 import java.util.*;
@@ -47,13 +49,13 @@ import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
 public class WatchDirectory {
 
     private final WatchService watcher;
-    private final Map<WatchKey,Path> keys;
+    private final Map<WatchKey, Path> keys;
     private final boolean recursive;
     private boolean trace = false;
 
     @SuppressWarnings("unchecked")
     private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
-        return (WatchEvent<T>)event;
+        return (WatchEvent<T>) event;
     }
 
     /*
@@ -75,7 +77,7 @@ public class WatchDirectory {
         new WatchDirectory(dir, recursive).processEvents();
     }
     */
-    
+
     /**
      * Register the given directory with the WatchService
      */
@@ -103,8 +105,7 @@ public class WatchDirectory {
         Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                throws IOException
-            {
+                    throws IOException {
                 register(dir);
                 return FileVisitResult.CONTINUE;
             }
@@ -114,16 +115,15 @@ public class WatchDirectory {
     /**
      * Creates a WatchService and registers the given directory
      */
-    public WatchDirectory(Path dir, boolean recursive) throws IOException 
-    {
+    public WatchDirectory(Path dir, boolean recursive) throws IOException {
         this.watcher = FileSystems.getDefault().newWatchService();
-        this.keys = new HashMap<WatchKey,Path>();
+        this.keys = new HashMap<WatchKey, Path>();
         this.recursive = recursive;
 
         //process existing files before registering
-        walkPath(dir.toString());    
-        
-        
+        walkPath(dir.toString());
+
+
         if (recursive) {
             //System.out.format("Scanning %s ...\n", dir);
             registerAll(dir);
@@ -140,7 +140,7 @@ public class WatchDirectory {
      * Process all events for keys queued to the watcher
      */
     public void processEvents() {
-        for (;;) {
+        for (; ; ) {
 
             // wait for key to be signalled
             WatchKey key;
@@ -156,9 +156,9 @@ public class WatchDirectory {
                 continue;
             }
 
-            for (WatchEvent<?> event: key.pollEvents()) {
+            for (WatchEvent<?> event : key.pollEvents()) {
                 @SuppressWarnings("rawtypes")
-				WatchEvent.Kind kind = event.kind();
+                WatchEvent.Kind kind = event.kind();
 
                 // TBD - provide example of how OVERFLOW event is handled
                 if (kind == OVERFLOW) {
@@ -172,12 +172,11 @@ public class WatchDirectory {
 
                 // print out event
                 // System.out.format("%s: %s\n", event.kind().name(), child);
-            	
-                if((kind == ENTRY_CREATE) || (kind == ENTRY_MODIFY))
-                {
-                	//System.out.format("%s: %s\n", event.kind().name(), child);
-                	PluginEngine.pathQueue.offer(child);
-                	
+
+                if ((kind == ENTRY_CREATE) || (kind == ENTRY_MODIFY)) {
+                    //System.out.format("%s: %s\n", event.kind().name(), child);
+                    PluginEngine.pathQueue.offer(child);
+
                 }
                 /*
                 else if(kind == ENTRY_DELETE)
@@ -216,19 +215,19 @@ public class WatchDirectory {
         System.exit(-1);
     }
 
-    private void walkPath( String path ) {
+    private void walkPath(String path) {
 
-        File root = new File( path );
+        File root = new File(path);
         File[] list = root.listFiles();
 
         if (list == null) return;
 
-        for ( File f : list ) {
-        	if ( f.isDirectory() ) {
-                walkPath( f.getAbsolutePath() );
+        for (File f : list) {
+            if (f.isDirectory()) {
+                walkPath(f.getAbsolutePath());
             } else {
                 Path dir = Paths.get(f.getAbsolutePath());
-            	PluginEngine.pathQueue.offer(dir);
+                PluginEngine.pathQueue.offer(dir);
             }
         }
     }
