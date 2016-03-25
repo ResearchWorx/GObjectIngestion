@@ -66,6 +66,7 @@ class MD5Tools {
         } catch (Exception ex) {
             System.out.println("MD5Tools : getMultiPartHash Error " + ex.toString());
         } finally {
+            assert fis != null;
             fis.close();
         }
         return mpHash;

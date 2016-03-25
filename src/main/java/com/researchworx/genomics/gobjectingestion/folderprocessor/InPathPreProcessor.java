@@ -1,11 +1,6 @@
 package com.researchworx.genomics.gobjectingestion.folderprocessor;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,42 +18,38 @@ import org.slf4j.LoggerFactory;
 public class InPathPreProcessor implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(InPathPreProcessor.class);
 
-    //private String transferStubFile;
-    private String transfer_watch_file;
-    private String transfer_status_file;
-    private String bucket_name;
+    private final String transfer_watch_file;
+    private final String transfer_status_file;
+    private final String bucket_name;
 
     public InPathPreProcessor() {
-        //logger.trace("Grabbing [transferfile] from config");
-        //transferStubFile = PluginEngine.config.getParam("transferfile");
-        logger.trace("Setting [transfer_watch_file] from [pathstage1 --> transfer_watch_file] from config");
+        logger.trace("InPathPreProcessor instantiated");
         transfer_watch_file = PluginEngine.config.getParam("pathstage1", "transfer_watch_file");
-        logger.debug("[transfer_watch_file = {}]", transfer_watch_file);
-        logger.trace("Setting [transfer_status_file] from [pathstage1 --> transfer_status_file] from config");
+        logger.debug("\"pathstage1\" --> \"transfer_watch_file\" from config [{}]", transfer_watch_file);
         transfer_status_file = PluginEngine.config.getParam("pathstage1", "transfer_status_file");
-        logger.debug("[transfer_status_file = {}]", transfer_status_file);
-        logger.trace("Setting [bucket_name] from [pathstage1 --> bucket] from config");
+        logger.debug("\"pathstage1\" --> \"transfer_status_file\" from config [{}]", transfer_status_file);
         bucket_name = PluginEngine.config.getParam("pathstage1", "bucket");
-        logger.debug("[bucket_name = {}]", bucket_name);
+        logger.debug("\"pathstage1\" --> \"bucket_name\" from config [{}]", bucket_name);
     }
 
     @Override
     public void run() {
+        logger.trace("Thread starting");
         try {
             logger.trace("Setting [PathProcessorActive] to true");
             PluginEngine.PathProcessorActive = true;
-            logger.trace("Instantiating new [ObjectEngine] on [pathstage1]");
             ObjectEngine oe = new ObjectEngine("pathstage1");
             logger.trace("Issuing [ObjectEngine].createBucket using [bucket_name = {}]", bucket_name);
             oe.createBucket(bucket_name);
-            logger.trace("Entering Path Processor while-loop");
+            logger.trace("Entering while-loop");
             while (PluginEngine.PathProcessorActive) {
                 try {
                     Path dir = PluginEngine.pathQueue.poll();
                     if (dir != null) {
-                        logger.info("New file: {}", dir);
+                        logger.info("Processing folder [{}]", dir);
                         String status = transferStatus(dir, "transfer_ready_status");
                         if (status != null && status.equals("yes")) {
+                            logger.trace("Transfer file exists, processing");
                             processDir(dir);
                         }
                     } else {
@@ -144,8 +135,8 @@ public class InPathPreProcessor implements Runnable {
         String outDir = inDir;
         outDir = outDir.substring(outDir.lastIndexOf("/") + 1, outDir.length());
         logger.debug("[outDir = {}]", outDir);
-        logger.info("Start process directory {} ", outDir);
-        logger.trace("Instantiating new [ObjectEngine] on \"pathstage1\"");
+
+        logger.info("Start processing directory {}", outDir);
 
         ObjectEngine oe = new ObjectEngine("pathstage1");
         String status = transferStatus(dir, "transfer_complete_status");
@@ -154,29 +145,28 @@ public class InPathPreProcessor implements Runnable {
         filterList.add(transfer_status_file);
 
         if (status.equals("no")) {
-            logger.trace("[status] = \"no\"");
+            logger.debug("[status = \"no\"]");
             Map<String, String> md5map = oe.getDirMD5(inDir, filterList);
             logger.trace("Setting MD5 hash");
             setTransferFileMD5(dir, md5map);
-            logger.trace("Transfering directory");
+            logger.trace("Transferring directory");
             if (oe.uploadDirectory(bucket_name, inDir, outDir)) {
                 if (setTransferFile(dir)) {
-                    logger.debug("Directory Transfered inDir={} outDir={}", inDir, outDir);
+                    logger.debug("Directory Transfered [inDir = {}, outDir = {}]", inDir, outDir);
                 } else {
-                    logger.error("Directory Transfer Failed inDir={} outDir={}", inDir, outDir);
+                    logger.error("Directory Transfer Failed [inDir = {}, outDir = {}]", inDir, outDir);
                 }
             }
         } else if (status.equals("yes")) {
-            logger.trace("[status] = \"yes\"");
+            logger.trace("[status = \"yes\"]");
             if (oe.isSyncDir(bucket_name, outDir, inDir, filterList)) {
                 logger.debug("Directory Sycned inDir={} outDir={}", inDir, outDir);
             }
         }
     }
 
-    private boolean setTransferFileMD5(Path dir, Map<String, String> md5map) {
+    private void setTransferFileMD5(Path dir, Map<String, String> md5map) {
         logger.debug("Call to setTransferFileMD5 [dir = {}, md5map = {}", dir, md5map.toString());
-        boolean isSet = false;
         try {
             String watchDirectoryName = PluginEngine.config.getParam("pathstage1", "watchdirectory");
             logger.debug("Grabbing [pathstage1 --> watchdirectory] from config [{}]", watchDirectoryName);
@@ -191,20 +181,18 @@ public class InPathPreProcessor implements Runnable {
                         if (md5file.startsWith("/")) {
                             md5file = md5file.substring(1);
                         }
-
                         out.write(md5file + ":" + entry.getValue() + "\n");
                         logger.debug("[md5file = {}, entry = {}] written", md5file, entry.getValue());
                     }
                 } finally {
+                    assert out != null;
                     out.flush();
                     out.close();
                 }
-                isSet = true;
             }
         } catch (Exception ex) {
             logger.error("setTransferFile : {}", ex.getMessage());
         }
-        return isSet;
     }
 
     private boolean setTransferFile(Path dir) {
@@ -246,7 +234,7 @@ public class InPathPreProcessor implements Runnable {
                 }
             }
         } catch (Exception ex) {
-            logger.error("setTransferFile : {}", ex.toString());
+            logger.error("setTransferFile {}", ex.getMessage());
         }
         return isSet;
     }

@@ -1,10 +1,6 @@
 package com.researchworx.genomics.gobjectingestion.folderprocessor;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,144 +8,67 @@ import java.util.List;
 
 import com.researchworx.genomics.gobjectingestion.objectstorage.ObjectEngine;
 import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InPathProcessor implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(InPathProcessor.class);
 
-    private String transferStubFile;
-    private String bucket_name;
+    private final String transferStubFile;
+    private final String bucket_name;
 
     public InPathProcessor() {
+        logger.trace("InPathProcessor instantiated");
         transferStubFile = PluginEngine.config.getParam("transferfile");
+        logger.debug("Grabbed \"transferfile\" param from config [transferStubFile = {}]", transferStubFile);
         bucket_name = PluginEngine.config.getParam("s3", "bucket");
+        logger.debug("Grabbed \"s3\" --> \"bucket\" from config [bucket_name = {}]");
     }
 
+    @Override
     public void run() {
+        logger.trace("Thread starting");
         try {
+            logger.trace("Setting [PathProcessorActive] to true and entering while-loop");
             PluginEngine.PathProcessorActive = true;
             while (PluginEngine.PathProcessorActive) {
                 try {
-                    //check if we should process folder
                     Path dir = PluginEngine.pathQueue.poll();
                     if (dir != null) {
-                        //if transfer file exist
                         String status = transferStatus(dir, "transfer_ready_status");
-                        if (status != null) {
-                            if (status.equals("yes")) {
-                                //process dir
-                                processDir(dir);
-                            }
+                        if (status != null && status.equals("yes")) {
+                            logger.trace("Transfer file exists, processing");
+                            processDir(dir);
                         }
                     } else {
                         Thread.sleep(1000);
                     }
                 } catch (Exception ex) {
-                    System.out.println("PathProcessorActive Error: " + ex.toString());
+                    logger.error("run : while {}", ex.getMessage());
                 }
             }
         } catch (Exception ex) {
-            System.out.println("PathProcessor Error: " + ex.toString());
+            logger.error("run {}", ex.getMessage());
         }
-    }
-
-    private void processDir(Path dir) {
-        String inDir = dir.toString();
-        inDir = inDir.substring(0, inDir.length() - transferStubFile.length() - 1);
-
-        String outDir = inDir;
-        outDir = outDir.substring(outDir.lastIndexOf("/") + 1, outDir.length());
-
-        ObjectEngine oe = new ObjectEngine("pathstage3");
-        String status = transferStatus(dir, "transfer_complete_status");
-
-        if (status.equals("no")) {
-            if (oe.uploadDirectory(bucket_name, inDir, outDir)) {
-
-                if (setTransferFile(dir)) {
-                    System.out.println("Directory Transfered inDir=" + inDir + " outDir=" + outDir);
-                } else {
-                    System.out.println("Directory Transfer Failed inDir=" + inDir + " outDir=" + outDir);
-                }
-            }
-        } else if (status.equals("yes")) {
-            List<String> filterList = new ArrayList<>();
-            filterList.add(transferStubFile);
-            if (oe.isSyncDir(bucket_name, outDir, inDir, filterList)) {
-                System.out.println("Directory Sycned inDir=" + inDir + " outDir=" + outDir);
-            }
-        }
-    }
-
-    private boolean setTransferFile(Path dir) {
-        boolean isSet = false;
-
-        try {
-            //transfer_request_flag.txt
-            if (dir.endsWith(transferStubFile)) {
-                //BufferedReader br = null;
-                //BufferedWriter bw = null;
-                //File xferFile = null;
-                List<String> slist = new ArrayList<>();
-                try (BufferedReader br = new BufferedReader(new FileReader(dir.toString()))) {
-                    //slist = new ArrayList<>();
-                    //br = new BufferedReader(new FileReader(dir.toString()));
-                    //StringBuilder sb = new StringBuilder();
-                    String line = br.readLine();
-
-                    while (line != null) {
-                        //sb.append(line);
-                        //sb.append(System.lineSeparator());
-                        if (line.contains("=")) {
-                            String[] sline = line.split("=");
-                            if (sline[0].toLowerCase().equals("transfer_complete_status")) {
-                                slist.add("TRANSFER_COMPLETE_STATUS=YES");
-                            } else {
-                                slist.add(line);
-                            }
-                        }
-                        line = br.readLine();
-                    }
-                    //String everything = sb.toString();
-                }/* finally {
-                    br.close();
-				}*/
-                try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(dir.toString())))) {
-                    //xferFile = new File(dir.toString());
-                    //bw = new BufferedWriter(new FileWriter(xferFile));
-                    for (String line : slist) {
-                        bw.write(line + "\n");
-                    }
-                } /*finally {
-                    bw.close();
-				}*/
-                String status = transferStatus(dir, "transfer_complete_status");
-                if (status.equals("yes")) {
-                    isSet = true;
-                }
-            }
-        } catch (Exception ex) {
-            System.out.println("PathProcessor Error : setTransferFile : " + ex.toString());
-        }
-        return isSet;
     }
 
     private String transferStatus(Path dir, String statusString) {
+        logger.debug("Call to transferStatus [dir = {}, statusString = {}]", dir, statusString);
         String status = null;
         try {
-            //transfer_request_flag.txt
-            if (dir.endsWith(transferStubFile)) {
-                //BufferedReader br = new BufferedReader(new FileReader(dir.toString()));
+            if (dir.toString().toLowerCase().endsWith(transferStubFile.toLowerCase())) {
+                logger.trace("[dir] tail matches [transferStubFile]");
                 try (BufferedReader br = new BufferedReader(new FileReader(dir.toString()))) {
-                    //StringBuilder sb = new StringBuilder();
+                    logger.trace("Reading line from [transferStubFile]");
                     String line = br.readLine();
 
                     while (line != null) {
-                        //sb.append(line);
-                        //sb.append(System.lineSeparator());
                         if (line.contains("=")) {
+                            logger.trace("Line contains \"=\"");
                             String[] sline = line.split("=");
+                            logger.debug("Line split into {} and {}", sline[0], sline[1]);
                             if (sline[0].toLowerCase().equals(statusString)) {
                                 if (sline[1].toLowerCase().equals("no")) {
-                                    //transfer_complete_status=no
                                     status = "no";
                                 } else if (sline[1].toLowerCase().equals("yes")) {
                                     //transfer_complete_status=no
@@ -159,15 +78,91 @@ public class InPathProcessor implements Runnable {
                         }
                         line = br.readLine();
                     }
-                    //String everything = sb.toString();
-                }/* finally {
-					br.close();
-				}*/
+                }
             }
         } catch (Exception ex) {
-            System.out.println("PathProcessor Error : transferStatus : " + ex.toString());
+            logger.error("transferStatus {}", ex.getMessage());
         }
         return status;
+    }
+
+    private void processDir(Path dir) {
+        logger.debug("Call to processDir [dir = {}]", dir);
+
+        String inDir = dir.toString();
+        inDir = inDir.substring(0, inDir.length() - transferStubFile.length() - 1);
+        logger.debug("[inDir = {}]", inDir);
+
+        String outDir = inDir;
+        outDir = outDir.substring(outDir.lastIndexOf("/") + 1, outDir.length());
+        logger.debug("[outDir = {}]", outDir);
+
+        logger.info("Start processing directory {}", outDir);
+
+        ObjectEngine oe = new ObjectEngine("pathstage3");
+        String status = transferStatus(dir, "transfer_complete_status");
+
+        if (status.equals("no")) {
+            logger.debug("[status = \"no\"]");
+            if (oe.uploadDirectory(bucket_name, inDir, outDir)) {
+                if (setTransferFile(dir, transferStubFile)) {
+                    logger.debug("Directory Transfered [inDir = {}, outDir = {}]", inDir, outDir);
+                } else {
+                    logger.debug("Directory Transfer Failed [inDir = {}, outDir = {}]", inDir, outDir);
+                }
+            }
+        } else if (status.equals("yes")) {
+            logger.trace("[status = \"yes\"]");
+            List<String> filterList = new ArrayList<>();
+            filterList.add(transferStubFile);
+            if (oe.isSyncDir(bucket_name, outDir, inDir, filterList)) {
+                logger.debug("Directory Sycned [inDir = {}, outDir = {}]", inDir, outDir);
+            }
+        }
+    }
+
+    private boolean setTransferFile(Path dir, String file) {
+        logger.debug("Call to setTransferFile [dir = {}]");
+        boolean isSet = false;
+        try {
+            if (dir.toString().toLowerCase().endsWith(file.toLowerCase())) {
+                logger.trace("[dir] ends with [transfer_status_file]");
+                List<String> slist = new ArrayList<>();
+                try (BufferedReader br = new BufferedReader(new FileReader(dir.toString()))) {
+                    String line = br.readLine();
+                    logger.trace("Grabbing a line from [dir]");
+                    while (line != null) {
+                        if (line.contains("=")) {
+                            logger.trace("Line contains \"=\"");
+                            String[] sline = line.split("=");
+                            logger.debug("Line split into {} and {}", sline[0], sline[1]);
+                            if (sline[0].toLowerCase().equals("transfer_complete_status")) {
+                                logger.trace("[sline[0] == \"transfer_complete_status\"]");
+                                slist.add("TRANSFER_COMPLETE_STATUS=YES");
+                            } else {
+                                logger.trace("[sline[0] != \"transfer_complete_status\"]");
+                                slist.add(line);
+                            }
+                        }
+                        line = br.readLine();
+                    }
+                }
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(dir.toString())))) {
+                    logger.trace("Writing to [dir]");
+                    for (String line : slist) {
+                        bw.write(line + "\n");
+                    }
+                }
+                logger.trace("Updating status to complete");
+                String status = transferStatus(dir, "transfer_complete_status");
+                if (status.equals("yes")) {
+                    isSet = true;
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("setTransferFile {}", ex.getMessage());
+        }
+        return isSet;
     }
 }
 

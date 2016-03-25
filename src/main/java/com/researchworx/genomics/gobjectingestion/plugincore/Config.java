@@ -11,7 +11,7 @@ public class Config {
     private HierarchicalINIConfiguration iniConfObj;
 
     Config(String configFile) throws ConfigurationException {
-        logger.trace("Constructor called");
+        logger.trace("Instantiated [{}]", configFile);
         logger.trace("Generating new [HierarchicalINIConfiguration from [configFile]");
         iniConfObj = new HierarchicalINIConfiguration(configFile);
         logger.trace("Enable [HierarchicalINIConfiguration].setAutoSave");
@@ -19,7 +19,7 @@ public class Config {
     }
 
     public String getParam(String paramName) {
-        logger.trace("getParam(paramName) called");
+        logger.debug("getParam(paramName) called");
         logger.trace("Grabbing [general] from [iniConfObj]");
         SubnodeConfiguration sObj = iniConfObj.getSection("general");
         logger.trace("Returning [{}] from [general]", paramName);
@@ -27,7 +27,7 @@ public class Config {
     }
 
     public String getParam(String sectionName, String paramName) {
-        logger.trace("getParam(sectionName, paramName) called");
+        logger.debug("getParam(sectionName, paramName) called");
         logger.trace("Grabbing [{}] from [iniConfObj]", sectionName);
         SubnodeConfiguration sObj = iniConfObj.getSection(sectionName);
         logger.trace("Returning [{}] from [{}]", paramName, sectionName);

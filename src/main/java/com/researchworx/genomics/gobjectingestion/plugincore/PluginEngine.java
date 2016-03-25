@@ -21,12 +21,10 @@ public class PluginEngine {
     public static Config config;
 
     public static void main(String[] args) throws Exception {
-        //Make sure initial input is sane.
         logger.info("Checking configuration");
         String configFile = checkConfig(args);
 
-        //Make sure config file
-        logger.trace("Building config from args");
+        logger.debug("Generating new [Config]");
         config = new Config(configFile);
         logger.trace("Building new ConcurrentLinkedQueue");
         pathQueue = new ConcurrentLinkedQueue<>();
@@ -42,13 +40,13 @@ public class PluginEngine {
             case 1:
                 logger.trace("Grabbing [pathstage1 --> watchdirectory] string and setting to [watchDirectoryName]");
                 watchDirectoryName = config.getParam("pathstage1", "watchdirectory");
-                logger.trace("Generating new [InPathPreProcessor] runnable");
+                logger.debug("Generating new [InPathPreProcessor] runnable");
                 InPathPreProcessor ippp = new InPathPreProcessor();
                 logger.trace("Building ppThread around new [InPathPreProcessor] runnable");
                 ppThread = new Thread(ippp);
                 break;
             case 2:
-                logger.trace("Generating new [OutPathPreProcessor] runnable");
+                logger.debug("Generating new [OutPathPreProcessor] runnable");
                 OutPathPreProcessor oppp = new OutPathPreProcessor();
                 logger.trace("Building ppThread around new [OutPathPreProcessor] runnable");
                 ppThread = new Thread(oppp);
@@ -56,7 +54,7 @@ public class PluginEngine {
             case 3:
                 logger.trace("Grabbing [pathstage3 --> watchdirectory] string and setting to [watchDirectoryName]");
                 watchDirectoryName = config.getParam("pathstage3", "watchdirectory");
-                logger.trace("Generating new [InPathProcessor] runnable");
+                logger.debug("Generating new [InPathProcessor] runnable");
                 InPathProcessor pp = new InPathProcessor();
                 logger.trace("Building ppThread around new [InPathProcessor] runnable");
                 ppThread = new Thread(pp);

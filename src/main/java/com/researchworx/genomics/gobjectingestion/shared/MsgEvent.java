@@ -64,20 +64,20 @@ public class MsgEvent {
 		setParam("dst_plugin",getParam(src_plugin));
 	}*/
 
-    public void setReturn2() {
+    /*public void setReturn2() {
         String src_region = null;
         String src_agent;
         String src_plugin = null;
         if (getParam("src_region") != null) { //plugin
             setMsgRegion(src_region);
-            src_region = new String(getParam("src_region"));
+            src_region = getParam("src_region");
 
             if (getParam("src_agent") != null) { //plugin
-                src_agent = new String(getParam("src_agent"));
+                src_agent = getParam("src_agent");
                 setMsgAgent(src_agent);
 
                 if (getParam("src_plugin") != null) { //plugin
-                    src_plugin = new String(getParam("src_plugin"));
+                    src_plugin = getParam("src_plugin");
                 } else {
                     setMsgPlugin(null);
                 }
@@ -148,7 +148,7 @@ public class MsgEvent {
             params.remove("dst_plugin");
             setMsgPlugin(null);
         }
-    }
+    }*/
 
     public String getMsgBody() {
         return params.get("msg");
@@ -217,7 +217,7 @@ public class MsgEvent {
     }
 
     public String getParamsString() {
-        Map<String, String> tmpMap = new HashMap<String, String>(params);
+        Map<String, String> tmpMap = new HashMap<>(params);
         //tmpMap.keySet().removeAll(params.keySet());
         //params.putAll(tmpMap);
         //target.putAll(tmp);
@@ -227,7 +227,10 @@ public class MsgEvent {
         Iterator it = tmpMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            sb.append(pairs.getKey() + " = " + pairs.getValue() + "\n");
+            sb.append(pairs.getKey());
+            sb.append(" = ");
+            sb.append(pairs.getValue());
+            sb.append("\n");
             //System.out.println(pairs.getKey() + " = " + pairs.getValue());
             it.remove(); // avoids a ConcurrentModificationException
         }

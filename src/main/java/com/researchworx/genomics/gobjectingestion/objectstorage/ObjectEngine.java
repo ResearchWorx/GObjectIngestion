@@ -29,8 +29,11 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ObjectEngine {
+    private static final Logger logger = LoggerFactory.getLogger(ObjectEngine.class);
 
     private static AmazonS3 conn;
     private final static String FOLDER_SUFFIX = "/";
@@ -38,46 +41,64 @@ public class ObjectEngine {
     private int partSize;
 
     public ObjectEngine(String group) {
+        logger.trace("ObjectEngine instantiated [group = {}]", group);
         String accessKey = PluginEngine.config.getParam(group, "accesskey");
+        logger.debug("\"accesskey\" from config [{}]", accessKey);
         String secretKey = PluginEngine.config.getParam(group, "secretkey");
+        logger.debug("\"secretkey\" from config [{}]", secretKey);
         String endpoint = PluginEngine.config.getParam(group, "endpoint");
+        logger.debug("\"endpoint\" from config [{}]", endpoint);
         this.partSize = Integer.parseInt(PluginEngine.config.getParam(group, "uploadpartsizemb"));
+        logger.debug("\"uploadpartsizemb\" from config [{}]", this.partSize);
 
         //String accessKey = PluginEngine.config.getParam("s3","accesskey");
         //String secretKey = PluginEngine.config.getParam("s3","secretkey");
         //String endpoint = PluginEngine.config.getParam("s3","endpoint");
+        logger.trace("Building AWS Credentials");
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
+        logger.trace("Building ClientConfiguration");
         ClientConfiguration clientConfig = new ClientConfiguration();
         clientConfig.setProtocol(Protocol.HTTPS);
         clientConfig.setSignerOverride("S3SignerType");
 
+        logger.trace("Connecting to Amazon S3");
         conn = new AmazonS3Client(credentials, clientConfig);
         conn.setS3ClientOptions(new S3ClientOptions().withPathStyleAccess(true));
         conn.setEndpoint(endpoint);
 
+        logger.trace("Building new MD5Tools");
         md5t = new MD5Tools(group);
     }
 
     public boolean uploadDirectory(String bucket, String inDir, String outDir) {
+        logger.debug("Call to uploadDirectory [bucket = {}, inDir = {}, outDir = {}]", bucket, inDir, outDir);
         boolean wasTransfered = false;
         TransferManager tx = null;
 
         try {
+            logger.trace("Building new TransferManager");
             tx = new TransferManager(conn);
 
+            logger.trace("Building new TransferManagerConfiguration");
             TransferManagerConfiguration tmConfig = new TransferManagerConfiguration();
 
+            logger.trace("Setting up minimum part size");
             // Sets the minimum part size for upload parts.
             tmConfig.setMinimumUploadPartSize(partSize * 1024 * 1024);
+            logger.trace("Setting up size threshold for multipart uploads");
             // Sets the size threshold in bytes for when to use multipart uploads.
             tmConfig.setMultipartUploadThreshold((long) partSize * 1024 * 1024);
+            logger.trace("Setting configuration on TransferManager");
             tx.setConfiguration(tmConfig);
 
+            logger.trace("[uploadDir] set to [inDir]");
             File uploadDir = new File(inDir);
 
+            logger.trace("Starting timer");
             long startUpload = System.currentTimeMillis();
 
+            logger.info("Beginning upload [bucket = {}, outDir = {}, uploadDir = {}]", bucket, outDir, uploadDir);
             MultipleFileUpload myUpload = tx.uploadDirectory(bucket, outDir, uploadDir, true);
 
             // You can poll your transfer's status to check its progress
@@ -91,14 +112,15 @@ public class ObjectEngine {
                 Thread.sleep(1000);
             }
 
+            logger.trace("Calculating upload statistics");
             float transferTime = (System.currentTimeMillis() - startUpload) / 1000;
             long bytesTransfered = myUpload.getProgress().getBytesTransferred();
             float transferRate = (bytesTransfered / 1000000) / transferTime;
 
-            System.out.println("Transfer Desc: " + myUpload.getDescription());
-            System.out.println("  - Transfered : " + myUpload.getProgress().getBytesTransferred() + " bytes");
-            System.out.println("  - Elapsed time : " + transferTime + " seconds");
-            System.out.println("  - Transfer rate : " + transferRate + " MB/sec");
+            logger.debug("Transfer Desc: " + myUpload.getDescription());
+            logger.debug("\t- Transfered : " + myUpload.getProgress().getBytesTransferred() + " bytes");
+            logger.debug("\t- Elapsed time : " + transferTime + " seconds");
+            logger.debug("\t- Transfer rate : " + transferRate + " MB/sec");
 
 			/*
 			   System.out.println("Transfer: " + myUpload.getDescription());
@@ -120,8 +142,9 @@ public class ObjectEngine {
 
             wasTransfered = true;
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : UploadDirectory Error : " + ex.toString());
+            logger.error("uploadDirectory {}", ex.getMessage());
         } finally {
+            assert tx != null;
             tx.shutdownNow();
         }
         return wasTransfered;
@@ -129,21 +152,29 @@ public class ObjectEngine {
 
     //	downloadDirectory(String bucketName, String keyPrefix, File destinationDirectory)
     public boolean downloadDirectory(String bucketName, String keyPrefix, String destinationDirectory) {
+        logger.debug("Call to downloadDirectory [bucketName = {}, keyPrefix = {}, destinationDirectory = {}", bucketName, keyPrefix, destinationDirectory);
         boolean wasTransfered = false;
         TransferManager tx = null;
 
         try {
+            logger.trace("Building new TransferManager");
             tx = new TransferManager(conn);
 
+            logger.trace("Setting [downloadDir] to [desinationDirectory]");
             File downloadDir = new File(destinationDirectory);
             if (!downloadDir.exists()) {
-                downloadDir.mkdirs();
+                if (!downloadDir.mkdirs()) {
+                    logger.error("Failed to create download directory!");
+                    return false;
+                }
             }
 
+            logger.trace("Starting download timer");
             long startDownload = System.currentTimeMillis();
+            logger.info("Beginning download [bucketName = {}, keyPrefix = {}, downloadDir = {}", bucketName, keyPrefix, downloadDir);
             MultipleFileDownload myDownload = tx.downloadDirectory(bucketName, keyPrefix, downloadDir);
 
-            System.out.println("Downloading: " + bucketName + ":" + keyPrefix + " to " + downloadDir);
+            //logger.info("Downloading: " + bucketName + ":" + keyPrefix + " to " + downloadDir);
 			/*
 			myDownload.addProgressListener(new ProgressListener() {
 				// This method is called periodically as your transfer progresses
@@ -164,14 +195,16 @@ public class ObjectEngine {
             while (!myDownload.isDone()) {
                 Thread.sleep(1000);
             }
+
+            logger.trace("Calculating download statistics");
             float transferTime = (System.currentTimeMillis() - startDownload) / 1000;
             long bytesTransfered = myDownload.getProgress().getBytesTransferred();
             float transferRate = (bytesTransfered / 1000000) / transferTime;
 
-            System.out.println("Transfer Desc: " + myDownload.getDescription());
-            System.out.println("  - Transfered : " + myDownload.getProgress().getBytesTransferred() + " bytes");
-            System.out.println("  - Elapsed time : " + transferTime + " seconds");
-            System.out.println("  - Transfer rate : " + transferRate + " MB/sec");
+            logger.debug("Transfer Desc: " + myDownload.getDescription());
+            logger.debug("\t- Transfered : " + myDownload.getProgress().getBytesTransferred() + " bytes");
+            logger.debug("\t- Elapsed time : " + transferTime + " seconds");
+            logger.debug("\t- Transfer rate : " + transferRate + " MB/sec");
 
 
             // Transfers also allow you to set a <code>ProgressListener</code> to receive
@@ -189,14 +222,15 @@ public class ObjectEngine {
             wasTransfered = true;
 
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : UploadDirectory Error : " + ex.toString());
+            logger.error("downloadDirectory {}", ex.getMessage());
         } finally {
+            assert tx != null;
             tx.shutdownNow();
         }
         return wasTransfered;
     }
 
-    public void createFolder(String bucket, String foldername) {
+    /*public void createFolder(String bucket, String foldername) {
 
         // Create metadata for your folder & set content-length to 0
         ObjectMetadata metadata = new ObjectMetadata();
@@ -212,7 +246,7 @@ public class ObjectEngine {
 
         // Send request to S3 to create folder
         conn.putObject(putObjectRequest);
-    }
+    }*/
 
     public boolean isSyncDir(String bucket, String s3Dir, String localDir, List<String> ignoreList) {
         boolean isSync = true;
@@ -238,18 +272,18 @@ public class ObjectEngine {
 
             File folder = new File(localDir);
             File[] listOfFiles = folder.listFiles();
-            for (int i = 0; i < listOfFiles.length; i++) {
-                if ((listOfFiles[i].isFile()) && (!ignoreList.contains(listOfFiles[i].getName()))) {
-                    String bucket_key = s3Dir + listOfFiles[i].getName();
+            for (File file : listOfFiles != null ? listOfFiles : new File[0]) {
+                if ((file.isFile()) && (!ignoreList.contains(file.getName()))) {
+                    String bucket_key = s3Dir + file.getName();
                     String md5hash = null;
                     if (mdhp.containsKey(bucket_key)) {
                         String checkhash = mdhp.get(bucket_key);
                         if (checkhash.contains("-")) {
                             //large file or part of multipart, use multipart checksum
-                            md5hash = md5t.getMultiCheckSum(listOfFiles[i].getAbsolutePath());
+                            md5hash = md5t.getMultiCheckSum(file.getAbsolutePath());
                         } else {
                             //small file or not multipart, use direct checksum
-                            md5hash = md5t.getCheckSum(listOfFiles[i].getAbsolutePath());
+                            md5hash = md5t.getCheckSum(file.getAbsolutePath());
                         }
                         if (!md5hash.equals(checkhash)) {
                             isSync = false;
@@ -276,10 +310,10 @@ public class ObjectEngine {
             File folder = new File(localDir);
             File[] listOfFiles = folder.listFiles();
 
-            for (int i = 0; i < listOfFiles.length; i++) {
-                if ((listOfFiles[i].isFile()) && (!ignoreList.contains(listOfFiles[i].getName()))) {
-                    if (!ignoreList.contains(listOfFiles[i].getName())) {
-                        mdhp.put(listOfFiles[i].getAbsolutePath(), md5t.getCheckSum(listOfFiles[i].getAbsolutePath()));
+            for (File file : listOfFiles) {
+                if ((file.isFile()) && (!ignoreList.contains(file.getName()))) {
+                    if (!ignoreList.contains(file.getName())) {
+                        mdhp.put(file.getAbsolutePath(), md5t.getCheckSum(file.getAbsolutePath()));
                     }
                 }
             }
@@ -291,7 +325,7 @@ public class ObjectEngine {
     }
 
     public Map<String, String> listBucketContents(String bucket) {
-        Map<String, String> fileMap = null;
+        Map<String, String> fileMap;
         try {
             fileMap = new HashMap<>();
             ObjectListing objects = conn.listObjects(bucket);

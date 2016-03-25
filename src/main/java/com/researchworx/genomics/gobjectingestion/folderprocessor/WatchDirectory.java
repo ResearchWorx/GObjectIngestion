@@ -58,26 +58,6 @@ public class WatchDirectory {
         return (WatchEvent<T>) event;
     }
 
-    /*
-    public static void main(String[] args) throws IOException {
-        // parse arguments
-        if (args.length == 0 || args.length > 2)
-            usage();
-        boolean recursive = false;
-        int dirArg = 0;
-        if (args[0].equals("-r")) {
-            if (args.length < 2)
-                usage();
-            recursive = true;
-            dirArg++;
-        }
-
-        // register directory and process its events
-        Path dir = Paths.get(args[dirArg]);
-        new WatchDirectory(dir, recursive).processEvents();
-    }
-    */
-
     /**
      * Register the given directory with the WatchService
      */
@@ -117,7 +97,7 @@ public class WatchDirectory {
      */
     public WatchDirectory(Path dir, boolean recursive) throws IOException {
         this.watcher = FileSystems.getDefault().newWatchService();
-        this.keys = new HashMap<WatchKey, Path>();
+        this.keys = new HashMap<>();
         this.recursive = recursive;
 
         //process existing files before registering
@@ -125,9 +105,7 @@ public class WatchDirectory {
 
 
         if (recursive) {
-            //System.out.format("Scanning %s ...\n", dir);
             registerAll(dir);
-            //System.out.println("Done.");
         } else {
             register(dir);
         }
@@ -170,20 +148,10 @@ public class WatchDirectory {
                 Path name = ev.context();
                 Path child = dir.resolve(name);
 
-                // print out event
-                // System.out.format("%s: %s\n", event.kind().name(), child);
-
                 if ((kind == ENTRY_CREATE) || (kind == ENTRY_MODIFY)) {
-                    //System.out.format("%s: %s\n", event.kind().name(), child);
                     PluginEngine.pathQueue.offer(child);
 
                 }
-                /*
-                else if(kind == ENTRY_DELETE)
-                {
-                	System.out.format("%s: %s\n", event.kind().name(), child);
-                }
-                */
                 // if directory is created, and watching recursively, then
                 // register it and its sub-directories
                 if (recursive && (kind == ENTRY_CREATE)) {
@@ -208,11 +176,6 @@ public class WatchDirectory {
                 }
             }
         }
-    }
-
-    static void usage() {
-        System.err.println("usage: java WatchDir [-r] dir");
-        System.exit(-1);
     }
 
     private void walkPath(String path) {
