@@ -13,21 +13,25 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 
 import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MD5Tools {
+    private static final Logger logger = LoggerFactory.getLogger(MD5Tools.class);
     private String group;
 
     MD5Tools(String group) {
+        logger.debug("Initializing [group = {}]", group);
         this.group = group;
     }
 
     String getMultiCheckSum(String fileName) throws IOException {
+        logger.debug("Call to getMultiCheckSum [filename = {}]", fileName);
         String mpHash = null;
         FileInputStream fis = null;
+        List<String> hashList = new ArrayList<>();
 
         try {
-            List<String> hashList = new ArrayList<>();
-
             MessageDigest md = MessageDigest.getInstance("MD5");
 
             File inputFile = new File(fileName);
@@ -63,11 +67,21 @@ class MD5Tools {
                 }
             }
             mpHash = calculateChecksumForMultipartUpload(hashList);
+        } catch (IOException ioe) {
+            // Blah
         } catch (Exception ex) {
             System.out.println("MD5Tools : getMultiPartHash Error " + ex.toString());
         } finally {
-            assert fis != null;
-            fis.close();
+            try {
+                assert fis != null;
+                fis.close();
+            } catch (AssertionError ae) {
+                logger.error("getMultiCheckSum FileInputStream closed prematurely");
+            } catch (IOException ioe) {
+                logger.error("getMultiCheckSum : fis.close() (IO) {}", ioe.getMessage());
+            } catch (Exception e) {
+                logger.error("getMultiCheckSum : fis.close() {}", e.getMessage());
+            }
         }
         return mpHash;
     }

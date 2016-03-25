@@ -1,8 +1,8 @@
 package com.researchworx.genomics.gobjectingestion.objectstorage;
 
-import java.io.ByteArrayInputStream;
+//import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,8 +20,8 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+//import com.amazonaws.services.s3.model.ObjectMetadata;
+//import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.MultipleFileUpload;
@@ -36,7 +36,7 @@ public class ObjectEngine {
     private static final Logger logger = LoggerFactory.getLogger(ObjectEngine.class);
 
     private static AmazonS3 conn;
-    private final static String FOLDER_SUFFIX = "/";
+    //private final static String FOLDER_SUFFIX = "/";
     private MD5Tools md5t;
     private int partSize;
 
@@ -117,7 +117,7 @@ public class ObjectEngine {
             long bytesTransfered = myUpload.getProgress().getBytesTransferred();
             float transferRate = (bytesTransfered / 1000000) / transferTime;
 
-            logger.debug("Transfer Desc: " + myUpload.getDescription());
+            logger.debug("Upload Transfer Desc: " + myUpload.getDescription());
             logger.debug("\t- Transfered : " + myUpload.getProgress().getBytesTransferred() + " bytes");
             logger.debug("\t- Elapsed time : " + transferTime + " seconds");
             logger.debug("\t- Transfer rate : " + transferRate + " MB/sec");
@@ -144,8 +144,12 @@ public class ObjectEngine {
         } catch (Exception ex) {
             logger.error("uploadDirectory {}", ex.getMessage());
         } finally {
-            assert tx != null;
-            tx.shutdownNow();
+            try {
+                assert tx != null;
+                tx.shutdownNow();
+            } catch (AssertionError e) {
+                logger.error("uploadDirectory - TransferManager was pre-emptively shutdown");
+            }
         }
         return wasTransfered;
     }
@@ -201,7 +205,7 @@ public class ObjectEngine {
             long bytesTransfered = myDownload.getProgress().getBytesTransferred();
             float transferRate = (bytesTransfered / 1000000) / transferTime;
 
-            logger.debug("Transfer Desc: " + myDownload.getDescription());
+            logger.debug("Download Transfer Desc: " + myDownload.getDescription());
             logger.debug("\t- Transfered : " + myDownload.getProgress().getBytesTransferred() + " bytes");
             logger.debug("\t- Elapsed time : " + transferTime + " seconds");
             logger.debug("\t- Transfer rate : " + transferRate + " MB/sec");
@@ -224,8 +228,12 @@ public class ObjectEngine {
         } catch (Exception ex) {
             logger.error("downloadDirectory {}", ex.getMessage());
         } finally {
-            assert tx != null;
-            tx.shutdownNow();
+            try {
+                assert tx != null;
+                tx.shutdownNow();
+            } catch (AssertionError e) {
+                logger.error("downloadDirectory - TransferManager was pre-emptively shutdown");
+            }
         }
         return wasTransfered;
     }
@@ -249,6 +257,7 @@ public class ObjectEngine {
     }*/
 
     public boolean isSyncDir(String bucket, String s3Dir, String localDir, List<String> ignoreList) {
+        logger.debug("Call to isSyncDir [bucket = {}, s3Dir = {}, localDir = {}, ignoreList = {}", bucket, s3Dir, localDir, ignoreList.toString());
         boolean isSync = true;
         Map<String, String> mdhp = new HashMap<>();
 
@@ -256,47 +265,51 @@ public class ObjectEngine {
             if (!s3Dir.endsWith("/")) {
                 s3Dir = s3Dir + "/";
             }
+            logger.trace("Grabbing [objects] from [bucket] [s3Dir]");
             ObjectListing objects = conn.listObjects(bucket, s3Dir);
             do {
                 for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
                     if (!mdhp.containsKey(objectSummary.getKey())) {
-                        //System.out.println("adding from s3 " + objectSummary.getKey() + " " + objectSummary.getETag());
+                        logger.debug("Adding from s3 [{} : {}]", objectSummary.getKey(), objectSummary.getETag());
                         mdhp.put(objectSummary.getKey(), objectSummary.getETag());
                     }
                 }
+                logger.trace("Grabbing next batch of [objects]");
                 objects = conn.listNextBatchOfObjects(objects);
             } while (objects.isTruncated());
 
             //S3Object object = conn.getObject(new GetObjectRequest(bucketName, key));
 
-
+            logger.trace("Grabbing list of files from [localDir]");
             File folder = new File(localDir);
             File[] listOfFiles = folder.listFiles();
             for (File file : listOfFiles != null ? listOfFiles : new File[0]) {
                 if ((file.isFile()) && (!ignoreList.contains(file.getName()))) {
                     String bucket_key = s3Dir + file.getName();
-                    String md5hash = null;
+                    logger.debug("[bucket_key = {}]", bucket_key);
+                    String md5hash;
                     if (mdhp.containsKey(bucket_key)) {
+                        logger.trace("[mdhp] contains [bucket_key]");
                         String checkhash = mdhp.get(bucket_key);
                         if (checkhash.contains("-")) {
-                            //large file or part of multipart, use multipart checksum
+                            logger.trace("Grabbing multipart-checksum for large/multipart file");
                             md5hash = md5t.getMultiCheckSum(file.getAbsolutePath());
                         } else {
-                            //small file or not multipart, use direct checksum
+                            logger.trace("Grabbing direct checksum for small/non-multipart file");
                             md5hash = md5t.getCheckSum(file.getAbsolutePath());
                         }
                         if (!md5hash.equals(checkhash)) {
                             isSync = false;
-                            System.out.println("false synced: " + bucket_key + " " + checkhash + " should be " + md5hash);
+                            logger.debug("Invalid Sync [bucket_key = {}, checkhash = {}] should be [md5hash = {}]", bucket_key, checkhash, md5hash);
                         }
                     } else {
-                        System.out.println("Missing synced: " + bucket_key + " " + md5hash);
+                        logger.debug("Missing Key [bucket_key = {}]", bucket_key);
                         isSync = false;
                     }
                 }
             }
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : isSyncDir " + ex.toString());
+            logger.error("isSyncDir {}", ex.getMessage());
             isSync = false;
         }
         return isSync;
@@ -304,122 +317,139 @@ public class ObjectEngine {
     }
 
     public Map<String, String> getDirMD5(String localDir, List<String> ignoreList) {
+        logger.debug("Call to getDirMD5 [localDir = {}, ignoreList = {}]", localDir, ignoreList.toString());
         Map<String, String> mdhp = new HashMap<>();
 
         try {
+            logger.trace("Grabbing [listOfFiles] from [localDir]");
             File folder = new File(localDir);
             File[] listOfFiles = folder.listFiles();
-
-            for (File file : listOfFiles) {
+            logger.trace("Iterating [listOfFiles]");
+            for (File file : listOfFiles != null ? listOfFiles : new File[0]) {
                 if ((file.isFile()) && (!ignoreList.contains(file.getName()))) {
+                    logger.trace("Processing [file = {}]", file.toString());
                     if (!ignoreList.contains(file.getName())) {
+                        logger.trace("Adding [file] to [mdhp]");
                         mdhp.put(file.getAbsolutePath(), md5t.getCheckSum(file.getAbsolutePath()));
                     }
                 }
             }
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : isSyncDir " + ex.toString());
+            logger.error("isSyncDir {}", ex.getMessage());
         }
         return mdhp;
 
     }
 
     public Map<String, String> listBucketContents(String bucket) {
-        Map<String, String> fileMap;
+        logger.debug("Call to listBucketContents [bucket = {}]", bucket);
+        Map<String, String> fileMap = new HashMap<>();
         try {
-            fileMap = new HashMap<>();
+            logger.trace("Grabbing [objects] list from [bucket]");
             ObjectListing objects = conn.listObjects(bucket);
             do {
                 for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
-                    //System.out.println(objectSummary.getKey() + "\t" +
-                    //        objectSummary.getSize() + "\t" +
-                    //        objectSummary.getETag() + "\t" +
-                    //        StringUtils.fromDate(objectSummary.getLastModified()));
+                    logger.debug("Found object {}\t{}\t{}\t{}", objectSummary.getKey(),
+                            objectSummary.getSize(),
+                            objectSummary.getETag(),
+                            StringUtils.fromDate(objectSummary.getLastModified()));
                     fileMap.put(objectSummary.getKey(), objectSummary.getETag());
                 }
+                logger.trace("Grabbing next batch of [objects]");
                 objects = conn.listNextBatchOfObjects(objects);
             } while (objects.isTruncated());
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : listbucket Error " + ex.toString());
+            logger.error("listBucketContents {}", ex.getMessage());
             fileMap = null;
         }
         return fileMap;
     }
 
     public List<String> listBucketDirs(String bucket) {
+        logger.debug("Call to listBucketDirs [bucket = {}", bucket);
         List<String> dirList = new ArrayList<>();
         try {
+            logger.trace("Instantiating new ListObjectsRequest");
             ListObjectsRequest lor = new ListObjectsRequest();
             lor.setBucketName(bucket);
             lor.setDelimiter("/");
 
+            logger.trace("Grabbing [objects] list from [lor]");
             ObjectListing objects = conn.listObjects(lor);
             do {
                 List<String> sublist = objects.getCommonPrefixes();
+                logger.trace("Adding all Common Prefixes from [objects]");
                 dirList.addAll(sublist);
+                logger.trace("Grabbing next batch of [objects]");
                 objects = conn.listNextBatchOfObjects(objects);
             } while (objects.isTruncated());
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : listbucket Error " + ex.toString());
+            logger.error("listBucketDirs {}", ex.getMessage());
             dirList = null;
         }
         return dirList;
     }
 
     public Map<String, String> listBucketContents(String bucket, String searchName) {
+        logger.debug("Call to listBucketContents [bucket = {}, searchName = {}]", bucket, searchName);
         Map<String, String> fileMap = new HashMap<>();
         try {
+            logger.trace("Grabbing [objects] list from [bucket]");
             ObjectListing objects = conn.listObjects(bucket);
             do {
                 for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
-                    //System.out.println(objectSummary.getKey() + "\t" +
-                    //        objectSummary.getSize() + "\t" +
-                    //        objectSummary.getETag() + "\t" +
-                    //        StringUtils.fromDate(objectSummary.getLastModified()));
                     if (objectSummary.getKey().contains(searchName)) {
+                        logger.debug("Found object {}\t{}\t{}\t{}", objectSummary.getKey(),
+                                objectSummary.getSize(),
+                                objectSummary.getETag(),
+                                StringUtils.fromDate(objectSummary.getLastModified()));
                         fileMap.put(objectSummary.getKey(), objectSummary.getETag());
                     }
                 }
                 objects = conn.listNextBatchOfObjects(objects);
             } while (objects.isTruncated());
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : listbucket Error " + ex.toString());
+            logger.error("listBucketContents {}", ex.getMessage());
             fileMap = null;
         }
         return fileMap;
     }
 
     public boolean doesObjectExist(String bucket, String objectName) {
-        //doesObjectExist
+        logger.debug("Call to doesObjectExist [bucket = {}, objectName = {}]", bucket, objectName);
         return conn.doesObjectExist(bucket, objectName);
-        //return true;
     }
 
     public boolean doesBucketExist(String bucket) {
+        logger.debug("Call to doesBucketExist [bucket = {}]", bucket);
         return conn.doesBucketExist(bucket);
     }
 
     public void createBucket(String bucket) {
+        logger.debug("Call to createBucket [bucket = {}]", bucket);
         try {
             if (!conn.doesBucketExist(bucket)) {
                 Bucket mybucket = conn.createBucket(bucket);
-                System.out.println("Created bucket : " + bucket + " " + mybucket.getCreationDate().toString());
+                logger.debug("Created bucket [{}] on [{}]", bucket, mybucket.getCreationDate().toString());
             }
         } catch (Exception ex) {
-            System.out.println("ObjectEngine : createBucket Error " + ex.toString());
+            logger.error("createBucket {}", ex.toString());
         }
 
     }
 
     public void deleteBucketContents(String bucket) {
+        logger.debug("Call to deleteBucketContents [bucket = {}]", bucket);
+        logger.trace("Grabbing [objects] list from [bucket]");
         ObjectListing objects = conn.listObjects(bucket);
         do {
             for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
+                logger.trace("Deleting [{}] object from [{}] bucket", objectSummary.getKey(), bucket);
                 conn.deleteObject(bucket, objectSummary.getKey());
 
-                System.out.println("Deleted " + objectSummary.getKey() + "\t" +
-                        objectSummary.getSize() + "\t" +
-                        objectSummary.getETag() + "\t" +
+                logger.debug("Deleted {}\t{}\t{}\t{}", objectSummary.getKey(),
+                        objectSummary.getSize(),
+                        objectSummary.getETag(),
                         StringUtils.fromDate(objectSummary.getLastModified()));
             }
             objects = conn.listNextBatchOfObjects(objects);

@@ -115,9 +115,13 @@ public class OutPathPreProcessor implements Runnable {
                     logger.debug("[md5file = {}, entry = {}] written", md5file, entry.getValue());
                 }
             } finally {
-                assert out != null;
-                out.flush();
-                out.close();
+                try {
+                    assert out != null;
+                    out.flush();
+                    out.close();
+                } catch (AssertionError e) {
+                    logger.error("setTransferFileMd5 - PrintWriter was pre-emptively shutdown");
+                }
             }
         } catch (Exception ex) {
             logger.error("setTransferFile {}", ex.getMessage());
