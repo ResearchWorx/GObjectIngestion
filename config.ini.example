@@ -1,5 +1,5 @@
 [general]
-pathstage=2
+pathstage=1
 
 [pathstage1]
 watchdirectory=
