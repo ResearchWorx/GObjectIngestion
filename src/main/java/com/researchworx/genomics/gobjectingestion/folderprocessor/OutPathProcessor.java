@@ -128,8 +128,8 @@ public class OutPathProcessor implements Runnable {
 
         for(String subDir : directories){
             logger.trace("Processing SubDirectory : " + subDir);
-            String commands_main_filename = dir + "/" + subDir + "commands_main.sh";
-            String config_files_directoryname = dir + "/" + subDir + "config_files";
+            String commands_main_filename = dir + "/" + subDir + "/commands_main.sh";
+            String config_files_directoryname = dir + "/" + subDir + "/config_files";
             File commands_main = new File(commands_main_filename);
             File config_files = new File(config_files_directoryname);
 
