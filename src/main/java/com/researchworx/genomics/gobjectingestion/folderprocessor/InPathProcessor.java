@@ -111,11 +111,19 @@ public class InPathProcessor implements Runnable {
         boolean isTransfer = false;
         try {
             logger.trace("Building file path");
-            String tmpPath = dir.toString().replace(transfer_watch_file, transfer_status_file);
+
+
+            String inDir = dir.toString();
+            inDir = inDir.substring(0, inDir.length() - transfer_watch_file.length() - 1);
+            inDir = inDir.replace("\\", "/");
+            String[] inDirs = inDir.split("/");
+            inDir = inDir + "/" + inDirs[inDirs.length - 1] + "/" + transfer_status_file;
+
+            //String tmpPath = dir.toString().replace(transfer_watch_file, transfer_status_file);
             logger.trace("Building lines array");
             List<String> lines = Arrays.asList("TRANSFER_READY_STATUS=YES", "TRANSFER_COMPLETE_STATUS=NO");
-            logger.debug("[tmpPath = {}]", tmpPath);
-            Path file = Paths.get(tmpPath);
+            logger.debug("[tmpPath = {}]", inDir);
+            Path file = Paths.get(inDir);
             logger.trace("Writing lines to file at [tmpPath]");
             Files.write(file, lines, Charset.forName("UTF-8"));
             logger.trace("Completed writing to file");
@@ -131,9 +139,9 @@ public class InPathProcessor implements Runnable {
 
         String inDir = dir.toString();
         inDir = inDir.substring(0, inDir.length() - transfer_status_file.length() - 1);
-        inDir = inDir.replace("\\", "/");
-        String[] inDirs = inDir.split("/");
-        inDir = inDir + "/" + inDirs[inDirs.length - 1];
+        //inDir = inDir.replace("\\", "/");
+        //String[] inDirs = inDir.split("/");
+        //inDir = inDir + "/" + inDirs[inDirs.length - 1];
         logger.debug("[inDir = {}]", inDir);
 
         String outDir = inDir;
