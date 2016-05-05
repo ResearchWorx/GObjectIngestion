@@ -95,8 +95,16 @@ public class OutPathProcessor implements Runnable {
                 Map<String, String> md5map = oe.getDirMD5(inDir, filterList);
                 logger.trace("Set MD5 hash");
                 setTransferFileMD5(inDir + transfer_status_file, md5map);
+                //process sample directories
+                processDirectories(inDir);
             }
+
         }
+    }
+
+    private void processDirectories(String dir)
+    {
+        logger.trace(dir);
     }
 
     private void setTransferFileMD5(String dir, Map<String, String> md5map) {
