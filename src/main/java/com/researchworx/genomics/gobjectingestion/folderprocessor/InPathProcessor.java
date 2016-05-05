@@ -1,5 +1,10 @@
 package com.researchworx.genomics.gobjectingestion.folderprocessor;
 
+import com.researchworx.genomics.gobjectingestion.objectstorage.ObjectEngine;
+import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -10,14 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-
-import com.researchworx.genomics.gobjectingestion.objectstorage.ObjectEngine;
-import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class InPathProcessor implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(InPathPreProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(InPathProcessor.class);
 
     private final String transfer_watch_file;
     private final String transfer_status_file;
@@ -244,3 +243,6 @@ public class InPathProcessor implements Runnable {
         return isSet;
     }
 }
+
+
+
