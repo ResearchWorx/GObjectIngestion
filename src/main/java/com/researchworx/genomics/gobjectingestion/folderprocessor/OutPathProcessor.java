@@ -138,7 +138,7 @@ public class OutPathProcessor implements Runnable {
                 logger.trace("Found : " + commands_main_filename + " and " + config_files_directoryname);
 
                 UUID id = UUID.randomUUID(); //create random tmp location
-                String tmpInput = dir + "/" + subDir;
+                String tmpInput = dir + subDir;
                 String tmpoutput = outgoing_directory + "/" + id.toString();
                 File tmpoutputdir = new File(tmpoutput);
                 if(commands_main.exists()) {
