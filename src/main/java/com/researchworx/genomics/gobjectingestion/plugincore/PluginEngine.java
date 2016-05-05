@@ -60,6 +60,7 @@ public class PluginEngine {
                 InPathProcessor pp = new InPathProcessor();
                 logger.info("Building ppThread around new [InPathProcessor] runnable");
                 ppThread = new Thread(pp);
+                break;
             case 4:
                 logger.debug("Generating new [OutPathProcessor] runnable");
                 OutPathProcessor opp = new OutPathProcessor();

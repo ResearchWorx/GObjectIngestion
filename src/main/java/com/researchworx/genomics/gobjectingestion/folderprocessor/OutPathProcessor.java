@@ -151,7 +151,7 @@ public class OutPathProcessor implements Runnable {
                 logger.info("Launching processing container:");
                 logger.info("Input Location: "  + tmpInput);
                 logger.info("Output Location: " + tmpoutput);
-                //upload data
+                //process data
 
                 //cleanup
                 logger.trace("Removing tmp output location : " + tmpoutput);
