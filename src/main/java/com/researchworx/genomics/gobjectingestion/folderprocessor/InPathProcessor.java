@@ -39,7 +39,7 @@ public class InPathProcessor implements Runnable {
         try {
             logger.trace("Setting [PathProcessorActive] to true");
             PluginEngine.PathProcessorActive = true;
-            ObjectEngine oe = new ObjectEngine("pathstage1");
+            ObjectEngine oe = new ObjectEngine("pathstage3");
             logger.trace("Issuing [ObjectEngine].createBucket using [bucket_name = {}]", bucket_name);
             oe.createBucket(bucket_name);
             logger.trace("Entering while-loop");
