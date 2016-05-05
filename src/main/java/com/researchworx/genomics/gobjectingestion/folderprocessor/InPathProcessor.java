@@ -131,6 +131,9 @@ public class InPathProcessor implements Runnable {
 
         String inDir = dir.toString();
         inDir = inDir.substring(0, inDir.length() - transfer_status_file.length() - 1);
+        inDir = inDir.replace("\\", "/");
+        String[] inDirs = inDir.split("/");
+        inDir = inDir + "/" + inDirs[inDirs.length - 1];
         logger.debug("[inDir = {}]", inDir);
 
         String outDir = inDir;
