@@ -128,8 +128,8 @@ public class OutPathProcessor implements Runnable {
 
         for(String subDir : directories){
             logger.trace("Processing SubDirectory : " + subDir);
-            String commands_main_filename = dir + "/" + subDir + "/commands_main.sh";
-            String config_files_directoryname = dir + "/" + subDir + "/config_files";
+            String commands_main_filename = dir + "/" + subDir + "commands_main.sh";
+            String config_files_directoryname = dir + "/" + subDir + "config_files";
             File commands_main = new File(commands_main_filename);
             File config_files = new File(config_files_directoryname);
 
@@ -146,9 +146,16 @@ public class OutPathProcessor implements Runnable {
                 }
                 tmpoutputdir.mkdir();
 
-                logger.trace("Creating output location : " + tmpoutput);
+                logger.trace("Creating tmp output location : " + tmpoutput);
 
-                logger.info("Launching processing container for " + dir + "/" + subDir);
+                logger.info("Launching processing container:");
+                logger.info("Input Location: "  + tmpInput);
+                logger.info("Output Location: " + tmpoutput);
+                //upload data
+
+                //cleanup
+                logger.trace("Removing tmp output location : " + tmpoutput);
+                deleteDirectory(tmpoutputdir);
             }
             else {
                 logger.error("Skipping! : commands_main.sh and config_files not found in subdirectory " + dir + "/" + subDir);
