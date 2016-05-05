@@ -45,6 +45,7 @@ public class InPathProcessor implements Runnable {
             while (PluginEngine.PathProcessorActive) {
                 try {
                     Path dir = PluginEngine.pathQueue.poll();
+                    logger.info("Dir Name: " + dir.toString());
                     if (dir != null) {
                         logger.info("Processing folder [{}]", dir);
                         String status = transferStatus(dir, "transfer_ready_status");
