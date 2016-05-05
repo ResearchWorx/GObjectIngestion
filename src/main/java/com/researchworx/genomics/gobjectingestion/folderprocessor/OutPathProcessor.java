@@ -6,10 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class OutPathProcessor implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(OutPathProcessor.class);
@@ -17,6 +14,7 @@ public class OutPathProcessor implements Runnable {
     private final String transfer_watch_file;
     private final String transfer_status_file;
     private final String incoming_directory;
+    private final String outgoing_directory;
     private final String bucket_name;
 
     public OutPathProcessor() {
@@ -27,6 +25,8 @@ public class OutPathProcessor implements Runnable {
         logger.debug("\"pathstage4\" --> \"transfer_status_file\" from config [{}]", transfer_status_file);
         incoming_directory = PluginEngine.config.getParam("pathstage4", "incoming_directory");
         logger.debug("\"pathstage4\" --> \"incoming_directory\" from config [{}]", incoming_directory);
+        outgoing_directory = PluginEngine.config.getParam("pathstage4", "outgoing_directory");
+        logger.debug("\"pathstage4\" --> \"outgoing_directory\" from config [{}]", outgoing_directory);
         bucket_name = PluginEngine.config.getParam("pathstage4", "bucket");
         logger.debug("\"pathstage4\" --> \"bucket\" from config [{}]", bucket_name);
     }
@@ -100,6 +100,21 @@ public class OutPathProcessor implements Runnable {
         }
     }
 
+    private boolean deleteDirectory(File path) {
+        if( path.exists() ) {
+            File[] files = path.listFiles();
+            for(int i=0; i<files.length; i++) {
+                if(files[i].isDirectory()) {
+                    deleteDirectory(files[i]);
+                }
+                else {
+                    files[i].delete();
+                }
+            }
+        }
+        return( path.delete() );
+    }
+
     private void processDirectories(String dir)
     {
         logger.trace("Processing Directory : " + dir);
@@ -113,6 +128,32 @@ public class OutPathProcessor implements Runnable {
 
         for(String subDir : directories){
             logger.trace("Processing SubDirectory : " + subDir);
+            String commands_main_filename = dir + "/" + subDir + "/commands_main.sh";
+            String config_files_directoryname = dir + "/" + subDir + "/config_files";
+            File commands_main = new File(commands_main_filename);
+            File config_files = new File(config_files_directoryname);
+
+            if(commands_main.exists() && !commands_main.isDirectory() && config_files.exists() && config_files.isDirectory()) {
+                // do something
+                logger.trace("Found : " + commands_main_filename + " and " + config_files_directoryname);
+
+                UUID id = UUID.randomUUID(); //create random tmp location
+                String tmpInput = dir + "/" + subDir;
+                String tmpoutput = outgoing_directory + "/" + id.toString();
+                File tmpoutputdir = new File(tmpoutput);
+                if(commands_main.exists()) {
+                    deleteDirectory(tmpoutputdir);
+                }
+                tmpoutputdir.mkdir();
+
+                logger.trace("Creating output location : " + tmpoutput);
+
+                logger.info("Launching processing container for " + dir + "/" + subDir);
+            }
+            else {
+                logger.error("Skipping! : commands_main.sh and config_files not found in subdirectory " + dir + "/" + subDir);
+            }
+
         }
     }
 
