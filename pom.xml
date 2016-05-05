@@ -34,7 +34,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.researchworx.genomics.gobjectingestion.PluginEngine</mainClass>
+              <mainClass>com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine</mainClass>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
