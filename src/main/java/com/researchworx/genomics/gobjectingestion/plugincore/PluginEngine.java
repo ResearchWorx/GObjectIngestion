@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathPreProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.OutPathPreProcessor;
+import com.researchworx.genomics.gobjectingestion.folderprocessor.OutPathProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.WatchDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,12 @@ public class PluginEngine {
                 InPathProcessor pp = new InPathProcessor();
                 logger.info("Building ppThread around new [InPathProcessor] runnable");
                 ppThread = new Thread(pp);
+            case 4:
+                logger.debug("Generating new [OutPathProcessor] runnable");
+                OutPathProcessor opp = new OutPathProcessor();
+                logger.trace("Building pThread around new [OutPathProcessor] runnable");
+                ppThread = new Thread(opp);
+                break;
             default:
                 logger.trace("Encountered default switch path");
                 break;

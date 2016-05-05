@@ -58,7 +58,7 @@
     <appender-ref ref="FOLDERPROCESSOR" />
     <appender-ref ref="STDOUT" />
   </logger>
-  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.InPathProcessor" level="trace" additivity="false">
+  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.InPathProcessor" level="info" additivity="false">
     <appender-ref ref="FOLDERPROCESSOR" />
     <appender-ref ref="STDOUT" />
   </logger>
@@ -66,6 +66,11 @@
     <appender-ref ref="FOLDERPROCESSOR" />
     <appender-ref ref="STDOUT" />
   </logger>
+  <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.OutPathProcessor" level="trace" additivity="false">
+    <appender-ref ref="FOLDERPROCESSOR" />
+    <appender-ref ref="STDOUT" />
+  </logger>
+
   <logger name="com.researchworx.genomics.gobjectingestion.folderprocessor.WatchDirectory" level="info" additivity="false">
     <appender-ref ref="FOLDERPROCESSOR" />
     <appender-ref ref="STDOUT" />
