@@ -139,7 +139,7 @@ public class InPathProcessor implements Runnable {
 
         logger.info("Start processing directory {}", outDir);
 
-        ObjectEngine oe = new ObjectEngine("pathstage1");
+        ObjectEngine oe = new ObjectEngine("pathstage3");
         String status = transferStatus(dir, "transfer_complete_status");
         List<String> filterList = new ArrayList<>();
         logger.trace("Adding [transfer_status_file] to [filterList]");
@@ -169,8 +169,8 @@ public class InPathProcessor implements Runnable {
     private void setTransferFileMD5(Path dir, Map<String, String> md5map) {
         logger.debug("Call to setTransferFileMD5 [dir = {}, md5map = {}", dir, md5map.toString());
         try {
-            String watchDirectoryName = PluginEngine.config.getParam("pathstage1", "watchdirectory");
-            logger.debug("Grabbing [pathstage1 --> watchdirectory] from config [{}]", watchDirectoryName);
+            String watchDirectoryName = PluginEngine.config.getParam("pathstage3", "watchdirectory");
+            logger.debug("Grabbing [pathstage3 --> watchdirectory] from config [{}]", watchDirectoryName);
             if (dir.toString().toLowerCase().endsWith(transfer_status_file.toLowerCase())) {
                 logger.trace("[dir] ends with [transfer_status_file]");
                 PrintWriter out = null;
