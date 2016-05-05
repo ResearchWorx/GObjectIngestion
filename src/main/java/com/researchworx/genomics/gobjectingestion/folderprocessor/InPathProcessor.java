@@ -119,6 +119,7 @@ public class InPathProcessor implements Runnable {
             String[] inDirs = inDir.split("/");
             inDir = inDir + "/" + inDirs[inDirs.length - 1] + "/" + transfer_status_file;
 
+            /*
             //String tmpPath = dir.toString().replace(transfer_watch_file, transfer_status_file);
             logger.trace("Building lines array");
             List<String> lines = Arrays.asList("TRANSFER_READY_STATUS=YES", "TRANSFER_COMPLETE_STATUS=NO");
@@ -127,6 +128,9 @@ public class InPathProcessor implements Runnable {
             logger.trace("Writing lines to file at [tmpPath]");
             Files.write(file, lines, Charset.forName("UTF-8"));
             logger.trace("Completed writing to file");
+            */
+            logger.trace("Copy " + dir.toString() + " to " + inDir);
+            Files.copy(dir, new File(inDir).toPath());
             isTransfer = true;
         } catch (Exception ex) {
             logger.error("createTransferFile Error : {}", ex.getMessage());
