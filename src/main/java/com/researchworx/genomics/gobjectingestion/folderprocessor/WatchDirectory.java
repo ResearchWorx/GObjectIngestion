@@ -190,6 +190,7 @@ public class WatchDirectory {
                 walkPath(f.getAbsolutePath());
             } else {
                 Path dir = Paths.get(f.getAbsolutePath());
+                System.out.println("DIR CODY: " + dir.toString());
                 PluginEngine.pathQueue.offer(dir);
             }
         }
