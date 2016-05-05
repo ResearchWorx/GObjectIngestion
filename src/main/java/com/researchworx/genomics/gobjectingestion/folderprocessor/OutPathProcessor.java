@@ -5,11 +5,9 @@ import com.researchworx.genomics.gobjectingestion.plugincore.PluginEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +102,18 @@ public class OutPathProcessor implements Runnable {
 
     private void processDirectories(String dir)
     {
-        logger.trace(dir);
+        logger.trace("Processing Directory : " + dir);
+        File file = new File(dir);
+        String[] directories = file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+                return new File(current, name).isDirectory();
+            }
+        });
+
+        for(String subDir : directories){
+            logger.trace("Processing SubDirectory : " + subDir);
+        }
     }
 
     private void setTransferFileMD5(String dir, Map<String, String> md5map) {
