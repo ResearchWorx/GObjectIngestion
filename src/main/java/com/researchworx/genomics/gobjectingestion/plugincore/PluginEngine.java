@@ -52,11 +52,12 @@ public class PluginEngine {
                 ppThread = new Thread(oppp);
                 break;
             case 3:
-                logger.trace("Grabbing [pathstage3 --> watchdirectory] string and setting to [watchDirectoryName]");
+                logger.info("Grabbing [pathstage3 --> watchdirectory] string and setting to [watchDirectoryName]");
                 watchDirectoryName = config.getParam("pathstage3", "watchdirectory");
-                logger.debug("Generating new [InPathProcessor] runnable");
+                logger.info("WatchDirectoryName=" + watchDirectoryName);
+                logger.info("Generating new [InPathProcessor] runnable");
                 InPathProcessor pp = new InPathProcessor();
-                logger.trace("Building ppThread around new [InPathProcessor] runnable");
+                logger.info("Building ppThread around new [InPathProcessor] runnable");
                 ppThread = new Thread(pp);
             default:
                 logger.trace("Encountered default switch path");
