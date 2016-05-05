@@ -162,6 +162,9 @@ public class InPathProcessor implements Runnable {
 
         if (status.equals("no")) {
             logger.debug("[status = \"no\"]");
+
+            //generate watchfiles
+
             Map<String, String> md5map = oe.getDirMD5(inDir, filterList);
             logger.trace("Setting MD5 hash");
             setTransferFileMD5(dir, md5map);
