@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.github.dockerjava.api.DockerClient;
@@ -144,10 +148,19 @@ public class PluginEngine {
                 //INFO : Mon May  9 20:35:42 UTC 2016 : UKHC Genomics pipeline V-1.0 : run_secondary_analysis.pl : Module Function run_locally() - execution successful
                 String[] outputStr = output.toString().split(":");
                 if(outputStr.length == 5) {
-                    logger.info(output.toString());
+                    Calendar cal = Calendar.getInstance();
+                    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+                    cal.setTime(sdf.parse(outputStr[1]));// all done
+                    long logdiff = (System.currentTimeMillis() - cal.getTimeInMillis());
+                    if(outputStr[0].toLowerCase().equals("info")) {
+                        logger.info("Log diff = " + logdiff + " : " +  outputStr[2] + " : " + outputStr[3] + " : " + outputStr[4]);
+                    }
+                    else if (outputStr[0].toLowerCase().equals("error")) {
+                        logger.error("Pipeline Error : " + output.toString());
+                    }
                 }
                 else {
-                    logger.error(output.toString());
+                    logger.error("Invalid output format: " + output.toString());
                 }
 
                 //logger.info(output.toString());
