@@ -141,12 +141,8 @@ public class PluginEngine {
             String outputLine;
             while ((outputLine = outputFeed.readLine()) != null) {
                 output.append(outputLine);
-                logger.info(outputLine);
-            }
 
-            if (!output.toString().equals("")) {
-                //INFO : Mon May  9 20:35:42 UTC 2016 : UKHC Genomics pipeline V-1.0 : run_secondary_analysis.pl : Module Function run_locally() - execution successful
-                String[] outputStr = output.toString().split(":");
+                String[] outputStr = outputLine.split(":");
                 if(outputStr.length == 5) {
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
@@ -162,8 +158,12 @@ public class PluginEngine {
                 else {
                     logger.error("Invalid output format: " + output.toString());
                 }
+                //logger.info(outputLine);
+            }
 
-                //logger.info(output.toString());
+            if (!output.toString().equals("")) {
+                //INFO : Mon May  9 20:35:42 UTC 2016 : UKHC Genomics pipeline V-1.0 : run_secondary_analysis.pl : Module Function run_locally() - execution successful
+                logger.info(output.toString());
                 //    clog.info(output.toString());
             }
             BufferedReader errorFeed = new BufferedReader(new InputStreamReader(p.getErrorStream()));
