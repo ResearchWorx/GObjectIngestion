@@ -132,6 +132,7 @@ public class PluginEngine {
         Process p;
         try {
             p = Runtime.getRuntime().exec(command);
+
             BufferedReader outputFeed = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String outputLine;
             while ((outputLine = outputFeed.readLine()) != null) {
@@ -139,10 +140,19 @@ public class PluginEngine {
                 logger.info(outputLine);
             }
 
-            if (!output.toString().equals(""))
-                logger.info(output.toString());
-            //    clog.info(output.toString());
+            if (!output.toString().equals("")) {
+                //INFO : Mon May  9 20:35:42 UTC 2016 : UKHC Genomics pipeline V-1.0 : run_secondary_analysis.pl : Module Function run_locally() - execution successful
+                String[] outputStr = output.toString().split(":");
+                if(outputStr.length == 5) {
+                    logger.info(output.toString());
+                }
+                else {
+                    logger.error(output.toString());
+                }
 
+                //logger.info(output.toString());
+                //    clog.info(output.toString());
+            }
             BufferedReader errorFeed = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             String errorLine;
             while ((errorLine = errorFeed.readLine()) != null) {
