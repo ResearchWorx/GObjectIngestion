@@ -132,7 +132,6 @@ public class PluginEngine {
         Process p;
         try {
             p = Runtime.getRuntime().exec(command);
-            p.waitFor();
             BufferedReader outputFeed = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String outputLine;
             while ((outputLine = outputFeed.readLine()) != null) {
@@ -154,6 +153,7 @@ public class PluginEngine {
             if (!error.toString().equals(""))
                 logger.error(error.toString());
             //    clog.error(error.toString());
+            p.waitFor();
 
         } catch (IOException ioe) {
             // WHAT!?! DO SOMETHIN'!
