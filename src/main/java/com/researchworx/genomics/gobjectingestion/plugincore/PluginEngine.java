@@ -145,7 +145,7 @@ public class PluginEngine {
                 String[] outputStr = outputLine.split(":");
 
                 for(String str : outputStr) {
-                    System.out.println(str);
+                    System.out.println(outputStr.length + " " + str);
                 }
                 /*
                 if(outputStr.length == 5) {
