@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.ListImagesCmd;
+import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathPreProcessor;
@@ -117,6 +119,9 @@ public class PluginEngine {
                 .withRegistryEmail("dockeruser@github.com")
                 .build();
         DockerClient docker = DockerClientBuilder.getInstance(config).build();
+        for(Image im : docker.listImagesCmd().exec()) {
+            System.out.println(im.toString() + " " + im.getId() + " " + im.getSize());
+        }
         System.out.println(docker.listImagesCmd().toString());
     }
 
