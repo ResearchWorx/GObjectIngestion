@@ -143,6 +143,7 @@ public class PluginEngine {
                 output.append(outputLine);
 
                 String[] outputStr = outputLine.split(":");
+
                 if(outputStr.length == 5) {
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
@@ -156,7 +157,7 @@ public class PluginEngine {
                     }
                 }
                 else {
-                    logger.error("Invalid output format: " + output.toString());
+                    logger.error(outputStr.length + " Invalid output format: " + output.toString());
                 }
                 //logger.info(outputLine);
             }
