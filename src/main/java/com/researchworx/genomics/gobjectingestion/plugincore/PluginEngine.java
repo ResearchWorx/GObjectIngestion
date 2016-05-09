@@ -107,19 +107,22 @@ public class PluginEngine {
             String outputLine;
             while ((outputLine = outputFeed.readLine()) != null) {
                 output.append(outputLine);
-                System.out.println(outputLine);
+                logger.info(outputLine);
             }
 
-            //if (!output.toString().equals(""))
+            if (!output.toString().equals(""))
+                logger.info(output.toString());
             //    clog.info(output.toString());
 
             BufferedReader errorFeed = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             String errorLine;
             while ((errorLine = errorFeed.readLine()) != null) {
                 error.append(errorLine);
+                logger.error(errorLine);
             }
 
-            //if (!error.toString().equals(""))
+            if (!error.toString().equals(""))
+                logger.error(error.toString());
             //    clog.error(error.toString());
 
         } catch (IOException ioe) {
