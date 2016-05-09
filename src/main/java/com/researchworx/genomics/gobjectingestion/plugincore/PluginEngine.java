@@ -8,6 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathPreProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.OutPathPreProcessor;
@@ -71,9 +74,10 @@ public class PluginEngine {
                 ppThread = new Thread(opp);
                 break;
             case 5:
-                String command = "docker run -i -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
-                System.out.println(command);
-                executeCommand(command);
+                //String command = "docker run -i -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
+                //System.out.println(command);
+                //executeCommand(command);
+                test();
                 break;
             default:
                 logger.trace("Encountered default switch path");
@@ -96,6 +100,24 @@ public class PluginEngine {
             logger.trace("Starting Directory Watcher");
             wd.processEvents();
         }
+    }
+
+    private static void test() {
+
+
+        DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost("tcp://localhost:2376")
+                .withDockerTlsVerify(false)
+                .withDockerCertPath("/home/user/.docker/certs")
+                .withDockerConfig("/home/user/.docker")
+                .withApiVersion("1.9.1")
+                .withRegistryUrl("https://intrepo.uky.edu:5000/v2/")
+                .withRegistryUsername("genomicuser")
+                .withRegistryPassword("u$secure01")
+                .withRegistryEmail("dockeruser@github.com")
+                .build();
+        DockerClient docker = DockerClientBuilder.getInstance(config).build();
+        System.out.println(docker.listImagesCmd().toString());
     }
 
     private static void executeCommand(String command) {
