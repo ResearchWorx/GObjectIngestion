@@ -1,6 +1,9 @@
 package com.researchworx.genomics.gobjectingestion.plugincore;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -67,6 +70,9 @@ public class PluginEngine {
                 logger.trace("Building pThread around new [OutPathProcessor] runnable");
                 ppThread = new Thread(opp);
                 break;
+            case 5:
+                executeCommand("boom");
+                break;
             default:
                 logger.trace("Encountered default switch path");
                 break;
@@ -87,6 +93,41 @@ public class PluginEngine {
             WatchDirectory wd = new WatchDirectory(dir, true);
             logger.trace("Starting Directory Watcher");
             wd.processEvents();
+        }
+    }
+
+    private static void executeCommand(String command) {
+        StringBuffer output = new StringBuffer();
+        StringBuffer error = new StringBuffer();
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            BufferedReader outputFeed = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String outputLine;
+            while ((outputLine = outputFeed.readLine()) != null) {
+                output.append(outputLine);
+                System.out.println(outputLine);
+            }
+
+            //if (!output.toString().equals(""))
+            //    clog.info(output.toString());
+
+            BufferedReader errorFeed = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            String errorLine;
+            while ((errorLine = errorFeed.readLine()) != null) {
+                error.append(errorLine);
+            }
+
+            //if (!error.toString().equals(""))
+            //    clog.error(error.toString());
+
+        } catch (IOException ioe) {
+            // WHAT!?! DO SOMETHIN'!
+        } catch (InterruptedException ie) {
+            // WHAT!?! DO SOMETHIN'!
+        } catch (Exception e) {
+            // WHAT!?! DO SOMETHIN'!
         }
     }
 

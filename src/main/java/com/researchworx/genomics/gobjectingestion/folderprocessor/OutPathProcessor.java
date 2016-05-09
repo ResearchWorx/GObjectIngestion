@@ -164,6 +164,41 @@ public class OutPathProcessor implements Runnable {
         }
     }
 
+    private void executeCommand(String command) {
+        StringBuffer output = new StringBuffer();
+        StringBuffer error = new StringBuffer();
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            BufferedReader outputFeed = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String outputLine;
+            while ((outputLine = outputFeed.readLine()) != null) {
+                output.append(outputLine);
+                System.out.println(outputLine);
+            }
+
+            //if (!output.toString().equals(""))
+            //    clog.info(output.toString());
+
+            BufferedReader errorFeed = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            String errorLine;
+            while ((errorLine = errorFeed.readLine()) != null) {
+                error.append(errorLine);
+            }
+
+            //if (!error.toString().equals(""))
+            //    clog.error(error.toString());
+
+        } catch (IOException ioe) {
+            // WHAT!?! DO SOMETHIN'!
+        } catch (InterruptedException ie) {
+            // WHAT!?! DO SOMETHIN'!
+        } catch (Exception e) {
+            // WHAT!?! DO SOMETHIN'!
+        }
+    }
+
     private void setTransferFileMD5(String dir, Map<String, String> md5map) {
         logger.debug("Call to setTransferFileMD5 [dir = {}, md5map = {}]", dir, md5map);
         try {
