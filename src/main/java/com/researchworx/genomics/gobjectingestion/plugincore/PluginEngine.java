@@ -76,10 +76,10 @@ public class PluginEngine {
                 ppThread = new Thread(opp);
                 break;
             case 5:
-                //String command = "docker run -i -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
-                //System.out.println(command);
-                //executeCommand(command);
-                test();
+                String command = "docker run -t -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
+                System.out.println(command);
+                executeCommand(command);
+                //test();
                 break;
             default:
                 logger.trace("Encountered default switch path");
@@ -104,8 +104,8 @@ public class PluginEngine {
         }
     }
 
+    /*
     private static void test() {
-
 
         DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost("tcp://localhost:2376")
@@ -124,6 +124,7 @@ public class PluginEngine {
         }
         System.out.println(docker.listImagesCmd().toString());
     }
+    */
 
     private static void executeCommand(String command) {
         StringBuffer output = new StringBuffer();
