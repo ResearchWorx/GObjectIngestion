@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 public class OutPathProcessor implements Runnable {
@@ -94,7 +95,7 @@ public class OutPathProcessor implements Runnable {
                 logger.trace("Set MD5 hash");
                 setTransferFileMD5(inDir + transfer_status_file, md5map);
                 //process sample directories
-                processDirectories(inDir);
+                processDirectories(inDir,remoteDir);
             }
 
         }
@@ -115,7 +116,7 @@ public class OutPathProcessor implements Runnable {
         return( path.delete() );
     }
 
-    private void processDirectories(String dir)
+    private void processDirectories(String dir, String remoteDir)
     {
         logger.trace("Processing Directory : " + dir);
         File file = new File(dir);
@@ -139,29 +140,49 @@ public class OutPathProcessor implements Runnable {
 
                 UUID id = UUID.randomUUID(); //create random tmp location
                 String tmpInput = dir + subDir;
-                String tmpoutput = outgoing_directory + "/" + id.toString();
-                File tmpoutputdir = new File(tmpoutput);
+                String tmpOutput = outgoing_directory + "/" + id.toString();
+                String tmpRemoteOutput = remoteDir + "/" + subDir;
+                File tmpOutputdir = new File(tmpOutput);
                 if(commands_main.exists()) {
-                    deleteDirectory(tmpoutputdir);
+                    deleteDirectory(tmpOutputdir);
                 }
-                tmpoutputdir.mkdir();
+                tmpOutputdir.mkdir();
 
-                logger.trace("Creating tmp output location : " + tmpoutput);
+                logger.trace("Creating tmp output location : " + tmpOutput);
 
                 logger.info("Launching processing container:");
                 logger.info("Input Location: "  + tmpInput);
-                logger.info("Output Location: " + tmpoutput);
+                logger.info("Output Location: " + tmpOutput);
+                logger.info("Remote Output Location: " + tmpRemoteOutput);
+
                 //process data
 
                 //cleanup
-                logger.trace("Removing tmp output location : " + tmpoutput);
-                deleteDirectory(tmpoutputdir);
+                logger.trace("Removing tmp output location : " + tmpOutput);
+                deleteDirectory(tmpOutputdir);
             }
             else {
                 logger.error("Skipping! : commands_main.sh and config_files not found in subdirectory " + dir + "/" + subDir);
             }
 
         }
+    }
+
+    private void uploadProcessDir(String inDir, String outDir) {
+        logger.debug("Call to uploadProcessDir [dir = {}]", inDir);
+
+        ObjectEngine oe = new ObjectEngine("pathstage4");
+        List<String> filterList = new ArrayList<>();
+        //logger.trace("Adding [transfer_status_file] to [filterList]");
+        //filterList.add(transfer_status_file);
+
+            Map<String, String> md5map = oe.getDirMD5(inDir, filterList);
+            logger.trace("Setting MD5 hash");
+            setTransferFileMD5(inDir, md5map);
+            logger.trace("Transferring directory");
+            if (oe.uploadDirectory(bucket_name, inDir, outDir)) {
+                    logger.debug("Directory Transfered [inDir = {}, outDir = {}]", inDir, outDir);
+            }
     }
 
     private void executeCommand(String command) {
