@@ -139,7 +139,7 @@ public class PluginEngine {
 
                 String[] outputStr = outputLine.split("\\|\\|");
 
-                System.out.println(outputStr.length + ": " + outputLine);
+                //System.out.println(outputStr.length + ": " + outputLine);
                 //for(String str : outputStr) {
                     //System.out.println(outputStr.length + " " + str);
                 //}
@@ -159,11 +159,7 @@ public class PluginEngine {
                         logger.error("Pipeline Error : " + output.toString());
                     }
                 }
-                else {
-                    logger.error(outputStr.length + " Invalid output format: " + output.toString());
-                }
 
-                //logger.info(outputLine);
             }
 
             if (!output.toString().equals("")) {
