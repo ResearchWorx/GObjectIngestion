@@ -12,11 +12,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.ListImagesCmd;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathPreProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.InPathProcessor;
 import com.researchworx.genomics.gobjectingestion.folderprocessor.OutPathPreProcessor;
@@ -142,7 +137,7 @@ public class PluginEngine {
             while ((outputLine = outputFeed.readLine()) != null) {
                 output.append(outputLine);
 
-                String[] outputStr = outputLine.split(":");
+                String[] outputStr = outputLine.split("||");
 
                 for(String str : outputStr) {
                     System.out.println(outputStr.length + " " + str);
