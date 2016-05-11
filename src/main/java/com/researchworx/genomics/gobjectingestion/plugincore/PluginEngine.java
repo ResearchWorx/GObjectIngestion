@@ -134,6 +134,7 @@ public class PluginEngine {
 
             BufferedReader outputFeed = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String outputLine;
+            long difftime = System.currentTimeMillis();
             while ((outputLine = outputFeed.readLine()) != null) {
                 output.append(outputLine);
 
@@ -151,7 +152,10 @@ public class PluginEngine {
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
                     cal.setTime(sdf.parse(outputStr[1].trim()));// all done
-                    long logdiff = (System.currentTimeMillis() - cal.getTimeInMillis());
+
+                    long logdiff = (cal.getTimeInMillis() - difftime);
+                    difftime = cal.getTimeInMillis();
+
                     if(outputStr[0].toLowerCase().equals("info")) {
                         logger.info("Log diff = " + logdiff + " : " +  outputStr[2] + " : " + outputStr[3] + " : " + outputStr[4]);
                     }
