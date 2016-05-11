@@ -145,8 +145,8 @@ public class PluginEngine {
                 //}
 
 
-                /*
-                if(outputStr.length == 5) {
+
+                if((outputStr.length == 5) && ((outputLine.toLowerCase().startsWith("info")) || (outputLine.toLowerCase().startsWith("error")))) {
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
                     cal.setTime(sdf.parse(outputStr[1]));// all done
@@ -161,7 +161,7 @@ public class PluginEngine {
                 else {
                     logger.error(outputStr.length + " Invalid output format: " + output.toString());
                 }
-                */
+
                 //logger.info(outputLine);
             }
 
