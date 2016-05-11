@@ -137,7 +137,7 @@ public class PluginEngine {
             while ((outputLine = outputFeed.readLine()) != null) {
                 output.append(outputLine);
 
-                String[] outputStr = outputLine.split("||");
+                String[] outputStr = outputLine.split("\\|\\|");
 
                 System.out.println(outputStr.length + ": " + outputLine);
                 //for(String str : outputStr) {
