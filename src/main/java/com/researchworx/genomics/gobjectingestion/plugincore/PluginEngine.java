@@ -184,10 +184,13 @@ public class PluginEngine {
 
         } catch (IOException ioe) {
             // WHAT!?! DO SOMETHIN'!
+            logger.error(ioe.getMessage());
         } catch (InterruptedException ie) {
             // WHAT!?! DO SOMETHIN'!
+            logger.error(ie.getMessage());
         } catch (Exception e) {
             // WHAT!?! DO SOMETHIN'!
+            logger.error(e.getMessage());
         }
     }
 
