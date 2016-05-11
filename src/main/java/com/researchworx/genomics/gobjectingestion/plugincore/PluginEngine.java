@@ -141,15 +141,16 @@ public class PluginEngine {
 
                 System.out.println(outputStr.length + ": " + outputLine);
                 //for(String str : outputStr) {
-                //    System.out.println(outputStr.length + " " + str);
+                    //System.out.println(outputStr.length + " " + str);
                 //}
-
-
+                for(int i = 0; i<outputStr.length; i++) {
+                    outputStr[i] = outputStr[i].trim();
+                }
 
                 if((outputStr.length == 5) && ((outputLine.toLowerCase().startsWith("info")) || (outputLine.toLowerCase().startsWith("error")))) {
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-                    cal.setTime(sdf.parse(outputStr[1]));// all done
+                    cal.setTime(sdf.parse(outputStr[1].trim()));// all done
                     long logdiff = (System.currentTimeMillis() - cal.getTimeInMillis());
                     if(outputStr[0].toLowerCase().equals("info")) {
                         logger.info("Log diff = " + logdiff + " : " +  outputStr[2] + " : " + outputStr[3] + " : " + outputStr[4]);
