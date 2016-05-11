@@ -139,9 +139,12 @@ public class PluginEngine {
 
                 String[] outputStr = outputLine.split("||");
 
-                for(String str : outputStr) {
-                    System.out.println(outputStr.length + " " + str);
-                }
+                System.out.println(outputStr.length + ": " + outputLine);
+                //for(String str : outputStr) {
+                //    System.out.println(outputStr.length + " " + str);
+                //}
+
+
                 /*
                 if(outputStr.length == 5) {
                     Calendar cal = Calendar.getInstance();
