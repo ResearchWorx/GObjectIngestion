@@ -160,12 +160,13 @@ public class PluginEngine {
                         logger.info("Log diff = " + logdiff + " : " +  outputStr[2] + " : " + outputStr[3] + " : " + outputStr[4]);
                     }
                     else if (outputStr[0].toLowerCase().equals("error")) {
-                        logger.error("Pipeline Error : " + output.toString());
+                        logger.error("Pipeline Error : " + outputLine.toString());
                     }
                 }
 
             }
 
+            /*
             if (!output.toString().equals("")) {
                 //INFO : Mon May  9 20:35:42 UTC 2016 : UKHC Genomics pipeline V-1.0 : run_secondary_analysis.pl : Module Function run_locally() - execution successful
                 logger.info(output.toString());
@@ -181,6 +182,8 @@ public class PluginEngine {
             if (!error.toString().equals(""))
                 logger.error(error.toString());
             //    clog.error(error.toString());
+            */
+
             p.waitFor();
 
         } catch (IOException ioe) {
