@@ -47,12 +47,12 @@ public class OutPathProcessor implements Runnable {
                     logger.trace("Populating [remoteDirs]");
                     List<String> remoteDirs = oe.listBucketDirs(bucket_name);
                     for(String remoteDir : remoteDirs) {
-                        logger.debug("Remote Directory: " + remoteDir);
+                        logger.debug("Remote Directory: *" + remoteDir +"*");
                     }
                     logger.trace("Populating [localDirs]");
                     List<String> localDirs = getWalkPath(incoming_directory);
                     for(String localDir : localDirs) {
-                        logger.debug("Local Directory: " + localDir);
+                        logger.debug("Local Directory: *" + localDir + "*");
                     }
 
                     List<String> newDirs = new ArrayList<>();
@@ -61,6 +61,7 @@ public class OutPathProcessor implements Runnable {
                             if (oe.doesObjectExist(bucket_name, remoteDir + transfer_watch_file)) {
                                 logger.debug("Adding [remoteDir = {}] to [newDirs]", remoteDir);
                                 newDirs.add(remoteDir);
+
                             }
                         }
                     }
