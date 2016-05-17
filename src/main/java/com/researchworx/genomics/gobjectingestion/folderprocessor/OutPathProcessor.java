@@ -156,7 +156,6 @@ public class OutPathProcessor implements Runnable {
                 tmpOutputdir.mkdir();
 
                 logger.trace("Creating tmp output location : " + tmpOutput);
-
                 logger.info("Launching processing container:");
                 logger.info("Input Location: " + tmpInput);
                 logger.info("Output Location: " + tmpOutput);
