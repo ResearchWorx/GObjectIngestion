@@ -69,6 +69,7 @@ public class ObjectEngine {
 
         logger.trace("Building new MD5Tools");
         md5t = new MD5Tools(group);
+
     }
 
     public boolean uploadDirectory(String bucket, String inDir, String outDir) {

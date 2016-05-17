@@ -42,10 +42,11 @@ public class OutPathProcessor implements Runnable {
         try {
             logger.trace("Setting [PathProcessorActive] to true");
             PluginEngine.PathProcessorActive = true;
-            ObjectEngine oe = new ObjectEngine("pathstage4");
+            ObjectEngine oe = null;
             logger.trace("Entering while-loop");
             while (PluginEngine.PathProcessorActive) {
                 try {
+                    oe = new ObjectEngine("pathstage4");
                     //oe.deleteBucketContents(bucket_name);
                     logger.trace("Populating [remoteDirs]");
                     List<String> remoteDirs = oe.listBucketDirs(bucket_name);
