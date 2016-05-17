@@ -172,7 +172,7 @@ public class OutPathProcessor implements Runnable {
                 if (oe.uploadDirectory(bucket_name, tmpOutput, tmpRemoteOutput)) {
                     //cleanup
                     logger.trace("Removing tmp output location : " + tmpOutput);
-                    deleteDirectory(tmpOutputdir);
+                    //deleteDirectory(tmpOutputdir);
                 } else {
                     logger.error("Skipping! : commands_main.sh and config_files not found in subdirectory " + dir + "/" + subDir);
                 }
