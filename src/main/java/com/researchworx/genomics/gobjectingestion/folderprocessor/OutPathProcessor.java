@@ -57,12 +57,16 @@ public class OutPathProcessor implements Runnable {
 
                     List<String> newDirs = new ArrayList<>();
                     for (String remoteDir : remoteDirs) {
-                        if (!localDirs.contains(remoteDir)) {
-                            if (oe.doesObjectExist(bucket_name, remoteDir + transfer_watch_file)) {
-                                logger.debug("Adding [remoteDir = {}] to [newDirs]", remoteDir);
-                                newDirs.add(remoteDir);
-
+                        boolean addDir = false;
+                        for(String localDir : localDirs) {
+                            if(localDir.equals(remoteDir)) {
+                                addDir = true;
                             }
+                            //if (!localDirs.contains(remoteDir)) {
+                        }
+                        if (addDir && (oe.doesObjectExist(bucket_name, remoteDir + transfer_watch_file))) {
+                            logger.debug("Adding [remoteDir = {}] to [newDirs]", remoteDir);
+                            newDirs.add(remoteDir);
                         }
                     }
                     if (!newDirs.isEmpty()) {
