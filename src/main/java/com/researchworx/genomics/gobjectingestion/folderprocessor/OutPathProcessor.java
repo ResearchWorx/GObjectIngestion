@@ -153,6 +153,7 @@ public class OutPathProcessor implements Runnable {
                 String tmpInput = dir + subDir;
                 String tmpOutput = outgoing_directory + "/" + id.toString();
                 String tmpRemoteOutput = remoteDir + "/" + subDir + "/" + "primary";
+                tmpRemoteOutput = tmpRemoteOutput.replace("//","/");
                 File tmpOutputdir = new File(tmpOutput);
                 if (commands_main.exists()) {
                     deleteDirectory(tmpOutputdir);
