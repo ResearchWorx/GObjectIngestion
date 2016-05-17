@@ -18,6 +18,7 @@ public class OutPathProcessor implements Runnable {
     private final String incoming_directory;
     private final String outgoing_directory;
     private final String bucket_name;
+    private ObjectEngine oe;
 
     public OutPathProcessor() {
         logger.debug("OutPathPreProcessor Instantiated");
@@ -39,7 +40,7 @@ public class OutPathProcessor implements Runnable {
         try {
             logger.trace("Setting [PathProcessorActive] to true");
             PluginEngine.PathProcessorActive = true;
-            ObjectEngine oe = new ObjectEngine("pathstage4");
+            oe = new ObjectEngine("pathstage4");
             logger.trace("Entering while-loop");
             while (PluginEngine.PathProcessorActive) {
                 try {
@@ -124,8 +125,7 @@ public class OutPathProcessor implements Runnable {
         return( path.delete() );
     }
 
-    private void processDirectories(String dir, String remoteDir)
-    {
+    private void processDirectories(String dir, String remoteDir) {
         logger.trace("Processing Directory : " + dir);
         File file = new File(dir);
         String[] directories = file.list(new FilenameFilter() {
@@ -135,23 +135,23 @@ public class OutPathProcessor implements Runnable {
             }
         });
 
-        for(String subDir : directories){
+        for (String subDir : directories) {
             logger.trace("Processing SubDirectory : " + subDir);
             String commands_main_filename = dir + subDir + "/commands_main.sh";
             String config_files_directoryname = dir + subDir + "/config_files";
             File commands_main = new File(commands_main_filename);
             File config_files = new File(config_files_directoryname);
 
-            if(commands_main.exists() && !commands_main.isDirectory() && config_files.exists() && config_files.isDirectory()) {
+            if (commands_main.exists() && !commands_main.isDirectory() && config_files.exists() && config_files.isDirectory()) {
                 // do something
                 logger.trace("Found : " + commands_main_filename + " and " + config_files_directoryname);
 
                 UUID id = UUID.randomUUID(); //create random tmp location
                 String tmpInput = dir + subDir;
                 String tmpOutput = outgoing_directory + "/" + id.toString();
-                String tmpRemoteOutput = remoteDir + "/" + subDir;
+                String tmpRemoteOutput = remoteDir + "/" + subDir + "/" + "primary";
                 File tmpOutputdir = new File(tmpOutput);
-                if(commands_main.exists()) {
+                if (commands_main.exists()) {
                     deleteDirectory(tmpOutputdir);
                 }
                 tmpOutputdir.mkdir();
@@ -159,7 +159,7 @@ public class OutPathProcessor implements Runnable {
                 logger.trace("Creating tmp output location : " + tmpOutput);
 
                 logger.info("Launching processing container:");
-                logger.info("Input Location: "  + tmpInput);
+                logger.info("Input Location: " + tmpInput);
                 logger.info("Output Location: " + tmpOutput);
                 logger.info("Remote Output Location: " + tmpRemoteOutput);
 
@@ -167,14 +167,17 @@ public class OutPathProcessor implements Runnable {
                 //String command = "docker run -t -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
                 String command = "docker run -t -v /home/gpackage:/gpackage -v " + tmpInput + ":/gdata/input -v " + tmpOutput + ":/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
                 logger.info("Docker exec command: " + command);
-                //cleanup
-                logger.trace("Removing tmp output location : " + tmpOutput);
-                deleteDirectory(tmpOutputdir);
-            }
-            else {
-                logger.error("Skipping! : commands_main.sh and config_files not found in subdirectory " + dir + "/" + subDir);
-            }
+                //transfer data
+                logger.info("Transfering " + tmpOutput + " to " + bucket_name + ":" + tmpRemoteOutput);
+                if (oe.uploadDirectory(bucket_name, tmpOutput, tmpRemoteOutput)) {
+                    //cleanup
+                    logger.trace("Removing tmp output location : " + tmpOutput);
+                    deleteDirectory(tmpOutputdir);
+                } else {
+                    logger.error("Skipping! : commands_main.sh and config_files not found in subdirectory " + dir + "/" + subDir);
+                }
 
+            }
         }
     }
 
