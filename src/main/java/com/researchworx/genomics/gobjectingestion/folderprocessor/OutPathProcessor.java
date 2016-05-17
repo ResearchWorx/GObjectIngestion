@@ -46,8 +46,14 @@ public class OutPathProcessor implements Runnable {
                     //oe.deleteBucketContents(bucket_name);
                     logger.trace("Populating [remoteDirs]");
                     List<String> remoteDirs = oe.listBucketDirs(bucket_name);
+                    for(String remoteDir : remoteDirs) {
+                        logger.debug("Remote Directory: " + remoteDir);
+                    }
                     logger.trace("Populating [localDirs]");
                     List<String> localDirs = getWalkPath(incoming_directory);
+                    for(String localDir : localDirs) {
+                        logger.debug("Local Directory: " + localDir);
+                    }
 
                     List<String> newDirs = new ArrayList<>();
                     for (String remoteDir : remoteDirs) {
