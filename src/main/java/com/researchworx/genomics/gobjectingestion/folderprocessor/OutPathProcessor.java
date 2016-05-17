@@ -220,6 +220,7 @@ public class OutPathProcessor implements Runnable {
                         logger.error("Pipeline Error : " + outputLine.toString());
                     }
                 }
+                logger.debug(outputLine);
 
             }
 
