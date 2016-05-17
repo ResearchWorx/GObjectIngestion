@@ -75,9 +75,9 @@ public class PluginEngine {
                 ppThread = new Thread(opp);
                 break;
             case 5:
-                String command = "docker run -t -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
-                System.out.println(command);
-                executeCommand(command);
+                //String command = "docker run -t -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
+                //System.out.println(command);
+                //executeCommand(command);
                 //test();
                 break;
             default:
@@ -124,79 +124,6 @@ public class PluginEngine {
         System.out.println(docker.listImagesCmd().toString());
     }
     */
-
-    private static void executeCommand(String command) {
-        StringBuffer output = new StringBuffer();
-        StringBuffer error = new StringBuffer();
-        Process p;
-        try {
-            p = Runtime.getRuntime().exec(command);
-
-            BufferedReader outputFeed = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String outputLine;
-            long difftime = System.currentTimeMillis();
-            while ((outputLine = outputFeed.readLine()) != null) {
-                output.append(outputLine);
-
-                String[] outputStr = outputLine.split("\\|\\|");
-
-                //System.out.println(outputStr.length + ": " + outputLine);
-                //for(String str : outputStr) {
-                    //System.out.println(outputStr.length + " " + str);
-                //}
-                for(int i = 0; i<outputStr.length; i++) {
-                    outputStr[i] = outputStr[i].trim();
-                }
-
-                if((outputStr.length == 5) && ((outputLine.toLowerCase().startsWith("info")) || (outputLine.toLowerCase().startsWith("error")))) {
-                    Calendar cal = Calendar.getInstance();
-                    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-                    cal.setTime(sdf.parse(outputStr[1].trim()));// all done
-
-                    long logdiff = (cal.getTimeInMillis() - difftime);
-                    difftime = cal.getTimeInMillis();
-
-                    if(outputStr[0].toLowerCase().equals("info")) {
-                        logger.info("Log diff = " + logdiff + " : " +  outputStr[2] + " : " + outputStr[3] + " : " + outputStr[4]);
-                    }
-                    else if (outputStr[0].toLowerCase().equals("error")) {
-                        logger.error("Pipeline Error : " + outputLine.toString());
-                    }
-                }
-
-            }
-
-            /*
-            if (!output.toString().equals("")) {
-                //INFO : Mon May  9 20:35:42 UTC 2016 : UKHC Genomics pipeline V-1.0 : run_secondary_analysis.pl : Module Function run_locally() - execution successful
-                logger.info(output.toString());
-                //    clog.info(output.toString());
-            }
-            BufferedReader errorFeed = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            String errorLine;
-            while ((errorLine = errorFeed.readLine()) != null) {
-                error.append(errorLine);
-                logger.error(errorLine);
-            }
-
-            if (!error.toString().equals(""))
-                logger.error(error.toString());
-            //    clog.error(error.toString());
-            */
-
-            p.waitFor();
-
-        } catch (IOException ioe) {
-            // WHAT!?! DO SOMETHIN'!
-            logger.error(ioe.getMessage());
-        } catch (InterruptedException ie) {
-            // WHAT!?! DO SOMETHIN'!
-            logger.error(ie.getMessage());
-        } catch (Exception e) {
-            // WHAT!?! DO SOMETHIN'!
-            logger.error(e.getMessage());
-        }
-    }
 
     private static String checkConfig(String[] args) {
         logger.trace("Stepping into checkConfig method");
