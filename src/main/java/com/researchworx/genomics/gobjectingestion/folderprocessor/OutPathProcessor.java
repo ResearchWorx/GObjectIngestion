@@ -18,7 +18,6 @@ public class OutPathProcessor implements Runnable {
     private final String incoming_directory;
     private final String outgoing_directory;
     private final String bucket_name;
-    private ObjectEngine oe;
 
     public OutPathProcessor() {
         logger.debug("OutPathPreProcessor Instantiated");
@@ -40,7 +39,7 @@ public class OutPathProcessor implements Runnable {
         try {
             logger.trace("Setting [PathProcessorActive] to true");
             PluginEngine.PathProcessorActive = true;
-            oe = new ObjectEngine("pathstage4");
+            ObjectEngine oe = new ObjectEngine("pathstage4");
             logger.trace("Entering while-loop");
             while (PluginEngine.PathProcessorActive) {
                 try {
@@ -169,6 +168,8 @@ public class OutPathProcessor implements Runnable {
                 logger.info("Docker exec command: " + command);
                 //transfer data
                 logger.info("Transfering " + tmpOutput + " to " + bucket_name + ":" + tmpRemoteOutput);
+                ObjectEngine oe = new ObjectEngine("pathstage4");
+
                 if (oe.uploadDirectory(bucket_name, tmpOutput, tmpRemoteOutput)) {
                     //cleanup
                     logger.trace("Removing tmp output location : " + tmpOutput);
