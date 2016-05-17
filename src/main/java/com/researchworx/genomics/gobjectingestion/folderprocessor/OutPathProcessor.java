@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -164,9 +167,17 @@ public class OutPathProcessor implements Runnable {
                 //process data
                 //String command = "docker run -t -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
                 //String command = "docker run -t -v /home/gpackage:/gpackage -v " + tmpInput + ":/gdata/input -v " + tmpOutput + ":/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
-                String command = "dir > " + tmpOutput + "/testfile";
+                String command = "dir";
                 logger.info("Docker exec command: " + command);
                 executeCommand(command);
+                String content = "Hello File!";
+                String path = tmpOutput + "/testfile";
+                try {
+                    Files.write(Paths.get(path), content.getBytes(), StandardOpenOption.CREATE);
+                }
+                catch (Exception ex) {
+                    logger.error(ex.getMessage());
+                }
                 //transfer data
                 logger.info("Transfering " + tmpOutput + " to " + bucket_name + ":" + tmpRemoteOutput);
                 ObjectEngine oe = new ObjectEngine("pathstage4");
