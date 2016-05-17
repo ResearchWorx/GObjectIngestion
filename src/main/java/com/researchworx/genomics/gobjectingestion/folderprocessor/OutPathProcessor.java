@@ -165,10 +165,10 @@ public class OutPathProcessor implements Runnable {
                 //String command = "docker run -t -v /home/gpackage:/gpackage -v /home/gdata/input/160427_D00765_0033_AHKM2CBCXX/Sample3:/gdata/input -v /home/gdata/output/f8de921b-fdfa-4365-bf7d-39817b9d1883:/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
                 String command = "docker run -t -v /home/gpackage:/gpackage -v " + tmpInput + ":/gdata/input -v " + tmpOutput + ":/gdata/output  intrepo.uky.edu:5000/gbase /gdata/input/commands_main.sh";
                 logger.info("Docker exec command: " + command);
+                executeCommand(command);
                 //transfer data
                 logger.info("Transfering " + tmpOutput + " to " + bucket_name + ":" + tmpRemoteOutput);
                 ObjectEngine oe = new ObjectEngine("pathstage4");
-
                 if (oe.uploadDirectory(bucket_name, tmpOutput, tmpRemoteOutput)) {
                     //cleanup
                     logger.trace("Removing tmp output location : " + tmpOutput);
