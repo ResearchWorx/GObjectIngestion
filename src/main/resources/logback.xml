@@ -80,7 +80,7 @@
     <appender-ref ref="OBJECTSTORAGE" />
     <appender-ref ref="STDOUT" />
   </logger>
-  <logger name="com.researchworx.genomics.gobjectingestion.objectstorage.ObjectEngine" level="info" additivity="false">
+  <logger name="com.researchworx.genomics.gobjectingestion.objectstorage.ObjectEngine" level="debug" additivity="false">
     <appender-ref ref="OBJECTSTORAGE" />
     <appender-ref ref="STDOUT" />
   </logger>
